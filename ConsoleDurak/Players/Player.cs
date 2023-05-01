@@ -16,7 +16,6 @@ namespace ConsoleDurak
         public string Name { get; set; } 
 
         public List<Card> PlayerKoloda { get; set; }
-
         public Status PlayerStatus { get; set; }
 
 

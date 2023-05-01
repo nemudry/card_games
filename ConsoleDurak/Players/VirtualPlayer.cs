@@ -12,7 +12,6 @@
         }
         
 
-
         public override Card Attack(Card kozyr, List<Card> cardsInGame)
         {
             //карта для атаки
