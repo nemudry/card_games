@@ -1,25 +1,16 @@
-﻿using ConsoleDurak;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static ConsoleDurak.Card;
-
-namespace ConsoleDurak
+﻿namespace ConsoleDurak
 {
 
     public class VirtualPlayer : Player
     {
         public VirtualPlayer(string name)
-            : base()
         {
             Name = name;
             PlayerStatus = Status.Neitral;
 
             PlayerKoloda = new List<Card>();
         }
-
+        
 
 
         public override Card Attack(Card kozyr, List<Card> cardsInGame)
@@ -80,7 +71,7 @@ namespace ConsoleDurak
                                let nominal = card.GetNominal
                                select nominal;
 
-                
+
                 // выбор наименьшего некозыря для атаки
                 foreach (var card in PlayerKoloda)
                 {
@@ -195,5 +186,4 @@ namespace ConsoleDurak
 
     }
 }
-                        
-   
+

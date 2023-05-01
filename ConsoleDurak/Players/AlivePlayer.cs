@@ -9,7 +9,6 @@ namespace ConsoleDurak
     public class AlivePlayer : Player
     {
         public AlivePlayer(string name)
-            : base()
         {
             Name = name;
             PlayerStatus = Status.Neitral;
@@ -17,6 +16,8 @@ namespace ConsoleDurak
             PlayerKoloda = new List<Card>();
 
         }
+
+
 
         public override Card Attack(Card kozyr, List<Card> cardsInGame)
         {
@@ -32,22 +33,17 @@ namespace ConsoleDurak
             {
                 do
                 {
-                    Color.Cyan("Ваш ход для атаки. Выберите карту:");
-                    Thread.Sleep(1000);
-                    ShowCardsInHand(kozyr);
+                    //показать руку
+                    HandInfo(kozyr);
 
                     Color.CyanShort("Ваш ответ: ");
                     int.TryParse(Console.ReadLine(), out answerAttack);
                     Console.WriteLine();
 
-                    if (answerAttack > PlayerKoloda.Count() || answerAttack < 1) // ввод неверного числа 
-                    {
-                        Color.Red("Введенное значение неверно. Выбранного номера нет в вашей колоде.");
-                        Console.WriteLine();
-                        Thread.Sleep(1000);
-                    }
+                    //проверка условий
+                    if (CheckСonditions(answerAttack, PlayerKoloda.Count)) break;
 
-                } while (answerAttack > PlayerKoloda.Count() || answerAttack < 1);
+                } while (true);
 
                 //получение карты и ее удаление из руки
                 attack = PlayerKoloda[answerAttack - 1];
@@ -71,9 +67,8 @@ namespace ConsoleDurak
                 //ввод номера карты для атаки
                 do
                 {
-                    Color.Cyan("Ваш ход для атаки. Выберите карту:");
-                    Thread.Sleep(1000);
-                    ShowCardsInHand(kozyr);
+                    //показать руку
+                    HandInfo(kozyr);
 
                     Console.WriteLine($"-1. Не атаковать.");
                     Console.WriteLine();
@@ -82,25 +77,25 @@ namespace ConsoleDurak
                     int.TryParse(Console.ReadLine(), out answerAttack);
                     Console.WriteLine();
 
+
                     // Не атаковать
                     if (answerAttack == -1)
                     {
                         return attack;
                     }
 
-                    // ввод неверного числа
-                    if (answerAttack > PlayerKoloda.Count() || answerAttack < 1)
-                    {
-                        Color.Red("Введенное значение неверно. Выбранного номера нет в вашей колоде.");
-                        Console.WriteLine();
-                        Thread.Sleep(1000);
-                    }
 
+                    if (!CheckСonditions(answerAttack, PlayerKoloda.Count))
+                    {
+                        Color.Red("Выбранного номера нет в вашей колоде.");
+                        Console.WriteLine();
+                        break;
+                    }
 
                     // соответствие выбранного номинала картам в игре
                     else
                     {
-                        // можно ли кидать данную карту в атаку
+                        // да, если в картах в игре есть номинал выбранной карты
                         isHaveNominal = nominals.Contains(PlayerKoloda[answerAttack - 1].GetNominal);
 
                         if (!isHaveNominal)
@@ -136,9 +131,7 @@ namespace ConsoleDurak
             //  ввод номера карты
             do
             {
-                Color.Cyan("Ваш ход для защиты. Выберите карту:");
-                Thread.Sleep(1000);
-                ShowCardsInHand(kozyr); // показать карты в руке
+                HandInfo(kozyr);
 
                 Console.WriteLine($"-1. Не защищаться.");
                 Console.WriteLine();
@@ -154,11 +147,11 @@ namespace ConsoleDurak
                 }
 
                 // ввод неверного числа 
-                if (answerDefend > PlayerKoloda.Count() || answerDefend < 1)
+                if (!CheckСonditions(answerDefend, PlayerKoloda.Count))
                 {
-                    Color.Red("Введенное значение неверно. Выбранного номера нет в вашей колоде.");
+                    Color.Red("Выбранного номера нет в вашей колоде.");
                     Console.WriteLine();
-                    Thread.Sleep(1000);
+                    break;
                 }
 
 
@@ -185,7 +178,6 @@ namespace ConsoleDurak
                 bool bigCard = false;
                 bool noMast = false;
 
-
                 // если атакуют козырем
                 if (cardsInGame.Last().GetMast == kozyr.GetMast)
                 {
@@ -193,10 +185,8 @@ namespace ConsoleDurak
                     kozOnKoz = PlayerKoloda[answerDefend - 1].GetMast == kozyr.GetMast;
                     if (!kozOnKoz)
                     {
-                        Color.Red("Введенное значение неверно. Козырь нужно бить козырем.");
-                        Console.WriteLine();
-                        Thread.Sleep(1000);
-                        return false;
+                        Color.Red("Козырь нужно бить козырем.");
+                        return NoCheckDefend ();
                     }
 
                     // козырь нужно бить старшим козырем
@@ -204,10 +194,8 @@ namespace ConsoleDurak
                         && PlayerKoloda[answerDefend - 1].GetNominal > cardsInGame.Last().GetNominal;
                     if (!bigKoz)
                     {
-                        Color.Red("Введенное значение неверно. Нужно бить старшим козырем.");
-                        Console.WriteLine();
-                        Thread.Sleep(1000);
-                        return false;
+                        Color.Red("Нужно бить старшим козырем.");
+                        return NoCheckDefend(); ;
                     }
                 }
 
@@ -223,10 +211,8 @@ namespace ConsoleDurak
                         noMast = PlayerKoloda[answerDefend - 1].GetMast == cardsInGame.Last().GetMast;
                         if (!noMast)
                         {
-                            Color.Red("Введенное значение неверно. Нужно бить той же мастью.");
-                            Console.WriteLine();
-                            Thread.Sleep(1000);
-                            return false;
+                            Color.Red("Нужно бить той же мастью.");
+                            return NoCheckDefend();
                         }
 
                         // масть должна соответствовать и номинал должен быть выше 
@@ -234,10 +220,8 @@ namespace ConsoleDurak
                             && PlayerKoloda[answerDefend - 1].GetNominal > cardsInGame.Last().GetNominal;
                         if (!bigCard)
                         {
-                            Color.Red("Введенное значение неверно. Нужно бить старший картой.");
-                            Console.WriteLine();
-                            Thread.Sleep(1000);
-                            return false;
+                            Color.Red("Нужно бить старшей картой.");
+                            return NoCheckDefend();
                         }
                     }
 
@@ -249,13 +233,35 @@ namespace ConsoleDurak
                 return true;
             }
 
+            bool NoCheckDefend()
+            {
+                Color.Red("Введенное значение неверно.");
+                Console.WriteLine();
+                Thread.Sleep(1000);
+                return false;
+            }
         }
 
 
 
-        //показать карты в руке у игрока
-        public void ShowCardsInHand(Card kozyr)
+        private bool CheckСonditions(int answerInput, int range)
         {
+            if (answerInput != -1)
+            {
+                if (answerInput > range && answerInput < 1)
+                {
+                    Color.Red("Введенное значение неверно.");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void HandInfo(Card kozyr)
+        {
+            Color.Cyan("Ваш ход. Выберите карту:");
+            Thread.Sleep(1000);
+
             Color.Cyan($"Карты в руке игрока {Name}.");
             foreach (var card in PlayerKoloda)
             {
@@ -263,6 +269,7 @@ namespace ConsoleDurak
                 if (kozyr.GetMast == card.GetMast) Color.Green(" Козырь.");
                 else Console.WriteLine();
             }
+
         }
 
     }
