@@ -10,5 +10,4 @@ namespace ConsoleDurak
         }
     }
 
-    public class Test { }
 }

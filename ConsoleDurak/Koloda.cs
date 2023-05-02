@@ -17,7 +17,6 @@ namespace ConsoleDurak
 
         // создание новой колоды на 36 карт
         public Koloda(int amountOfCards)
-            : base()
         {
             GetKoloda = new Stack<Card>();
 

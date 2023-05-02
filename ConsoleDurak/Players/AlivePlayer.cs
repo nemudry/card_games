@@ -19,6 +19,7 @@ namespace ConsoleDurak
 
 
 
+
         public override Card Attack(Card kozyr, List<Card> cardsInGame)
         {
 
@@ -36,19 +37,16 @@ namespace ConsoleDurak
                     //показать руку
                     HandInfo(kozyr);
 
-                    Color.CyanShort("Ваш ответ: ");
-                    int.TryParse(Console.ReadLine(), out answerAttack);
-                    Console.WriteLine();
+                    //ответ игрока
+                    answerAttack = Table.PlayerAnswer();
 
                     //проверка условий
-                    if (CheckСonditions(answerAttack, PlayerKoloda.Count)) break;
+                    if (Table.CheckСonditions(answerAttack, PlayerKoloda.Count, 1)) break;
 
                 } while (true);
 
-                //получение карты и ее удаление из руки
-                attack = PlayerKoloda[answerAttack - 1];
-                PlayerKoloda.Remove(attack);
-                return attack;
+                //получение нужной карты и удаление ее из руки
+                return GetCard(answerAttack);
             }
 
 
@@ -69,28 +67,19 @@ namespace ConsoleDurak
                 {
                     //показать руку
                     HandInfo(kozyr);
-
                     Console.WriteLine($"-1. Не атаковать.");
                     Console.WriteLine();
 
-                    Color.CyanShort("Ваш ответ: ");
-                    int.TryParse(Console.ReadLine(), out answerAttack);
-                    Console.WriteLine();
+                    //ответ игрока
+                    answerAttack = Table.PlayerAnswer();
 
-
-                    // Не атаковать
+                    // -1. Не атаковать
                     if (answerAttack == -1)
                     {
                         return attack;
                     }
 
-
-                    if (!CheckСonditions(answerAttack, PlayerKoloda.Count))
-                    {
-                        Color.Red("Выбранного номера нет в вашей колоде.");
-                        Console.WriteLine();
-                        break;
-                    }
+                    if (!Table.CheckСonditions(answerAttack, PlayerKoloda.Count, 1)) break;
 
                     // соответствие выбранного номинала картам в игре
                     else
@@ -113,9 +102,7 @@ namespace ConsoleDurak
             }
 
             //получение карты и ее удаление из руки
-            attack = PlayerKoloda[answerAttack - 1];
-            PlayerKoloda.Remove(attack);
-            return attack;
+            return GetCard(answerAttack);
         }
 
 
@@ -128,17 +115,16 @@ namespace ConsoleDurak
             PlayerKoloda.Sort(Card.SortByNominal); // сортировка карт по номиналу
 
 
-            //  ввод номера карты
             do
             {
+                //показать руку
                 HandInfo(kozyr);
-
-                Console.WriteLine($"-1. Не защищаться.");
+                Console.WriteLine($"[-1]. Не защищаться.");
                 Console.WriteLine();
 
-                Color.CyanShort("Ваш ответ: ");
-                int.TryParse(Console.ReadLine(), out answerDefend);
-                Console.WriteLine();
+
+                //ответ игрока
+                answerDefend = Table.PlayerAnswer();
 
                 // Не защищаться
                 if (answerDefend == -1)
@@ -147,12 +133,7 @@ namespace ConsoleDurak
                 }
 
                 // ввод неверного числа 
-                if (!CheckСonditions(answerDefend, PlayerKoloda.Count))
-                {
-                    Color.Red("Выбранного номера нет в вашей колоде.");
-                    Console.WriteLine();
-                    break;
-                }
+                if (!Table.CheckСonditions(answerDefend, PlayerKoloda.Count, 1)) break;
 
 
                 //условия защиты согласно правилам игры
@@ -164,9 +145,7 @@ namespace ConsoleDurak
             } while (true);
 
             //получение карты и ее удаление из руки
-            defend = PlayerKoloda[answerDefend - 1];
-            PlayerKoloda.Remove(defend);
-            return defend;
+            return GetCard(answerDefend); 
 
 
             //условия защиты согласно правилам игры
@@ -244,19 +223,8 @@ namespace ConsoleDurak
 
 
 
-        private bool CheckСonditions(int answerInput, int range)
-        {
-            if (answerInput != -1)
-            {
-                if (answerInput > range && answerInput < 1)
-                {
-                    Color.Red("Введенное значение неверно.");
-                    return false;
-                }
-            }
-            return true;
-        }
 
+        //показать карты в руке игрока
         private void HandInfo(Card kozyr)
         {
             Color.Cyan("Ваш ход. Выберите карту:");
@@ -270,6 +238,18 @@ namespace ConsoleDurak
                 else Console.WriteLine();
             }
 
+        }
+
+
+
+
+        //получение карты и ее удаление из руки
+        private Card GetCard (int c)
+        {
+            //получение карты и ее удаление из руки
+            Card card = PlayerKoloda[c - 1];
+            PlayerKoloda.Remove(card);
+            return card;
         }
 
     }

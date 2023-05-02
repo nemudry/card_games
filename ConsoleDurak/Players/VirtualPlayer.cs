@@ -10,7 +10,26 @@
 
             PlayerKoloda = new List<Card>();
         }
-        
+
+
+        //выбирается наименьшая карта по номиналу 
+        private Card CardMin(Card card, Card x)
+        {
+            if (x.GetNominal <= card!.GetNominal)
+            {
+                card = x;
+            }
+            return card;
+        }
+
+        private Card CardNull (Card card, Card x)
+        {
+            if (card == null)
+            {
+                card = x;
+            }
+            return card;
+        }
 
         public override Card Attack(Card kozyr, List<Card> cardsInGame)
         {
@@ -30,10 +49,7 @@
                     if (PlayerKoloda.All(card => card.GetMast == kozyr.GetMast))
                     {
                         //выбирается наименьший козырь
-                        if (card.GetNominal <= attack.GetNominal)
-                        {
-                            attack = card;
-                        }
+                        attack = CardMin(attack, card);
                     }
 
                     else
@@ -48,10 +64,7 @@
                             }
 
                             //затем выбирается наименьший некозырь
-                            if (card.GetNominal <= attack.GetNominal)
-                            {
-                                attack = card;
-                            }
+                            attack = CardMin(attack, card);
                         }
                     }
                 }
@@ -78,20 +91,16 @@
                     {
                         if (nominals.Contains(card.GetNominal))
                         {
-                            if (attack == null)
-                            {
-                                attack = card;
-                            }
 
-                            if (attack!.GetNominal > card.GetNominal)
-                            {
-                                attack = card;
-                            }
+                            attack = CardNull(attack, card);
+
+                            attack = CardMin(attack, card);
 
                         }
                     }
                 }
             }
+
 
             PlayerKoloda.Remove(attack);
             return attack;
@@ -115,15 +124,9 @@
                     {
                         if (card.GetNominal > cardsInGame.Last().GetNominal)
                         {
-                            if (defend == null)
-                            {
-                                defend = card;
-                            }
+                            defend = CardNull(defend, card);
 
-                            if (defend!.GetNominal > card.GetNominal)
-                            {
-                                defend = card;
-                            }
+                            defend = CardMin(defend, card);
                         }
                     }
                 }
@@ -137,15 +140,10 @@
 
                         if (card.GetMast == kozyr.GetMast)
                         {
-                            if (defend == null)
-                            {
-                                defend = card;
-                            }
+                            defend = CardNull(defend, card);
 
-                            if (card.GetNominal < defend!.GetNominal) //выбирается меньший некозырь по номиналу
-                            {
-                                defend = card;
-                            }
+                            //выбирается меньший некозырь по номиналу
+                            defend = CardMin(defend, card);
                         }
                     }
                 }
@@ -162,15 +160,10 @@
                     {
                         if (card.GetNominal > cardsInGame.Last().GetNominal)
                         {
-                            if (defend == null)
-                            {
-                                defend = card;
-                            }
+                            defend = CardNull(defend, card);
 
-                            if (card.GetNominal < defend!.GetNominal) //выбирается меньший некозырь по номиналу
-                            {
-                                defend = card;
-                            }
+                            //выбирается меньший некозырь по номиналу
+                            defend = CardMin(defend, card);
                         }
                     }
                 }

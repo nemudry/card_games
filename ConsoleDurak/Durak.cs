@@ -24,7 +24,6 @@ namespace ConsoleDurak
         }
 
         public Durak(string playerName, int amountOfPlayers, int botLevel)
-            : base()
         {
 
             Name = "Дурак подкидной";

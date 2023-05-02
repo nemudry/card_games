@@ -32,17 +32,15 @@ namespace ConsoleDurak
                 foreach (Game game in Games)
                 {
                     Console.WriteLine($"[{Games.IndexOf(game)+1}] {game.Name}.");
-                }                
-
-                int.TryParse(Console.ReadLine(), out answerGame);
-
-                if (answerGame < 1 || answerGame > Games.Count())
-                {
-                    Color.Red("Введенное значение не подходит. Попробуйте иное имя.");
-                    Console.WriteLine();
                 }
 
-            } while (answerGame < 1 || answerGame > Games.Count());
+                answerGame = PlayerAnswer();
+
+                //проверка условий
+                if (Table.CheckСonditions(answerGame, Games.Count(), 1)) break;
+
+
+            } while (true);
             Console.WriteLine();
 
 
@@ -68,7 +66,7 @@ namespace ConsoleDurak
 
 
         //Ввод имени и количества игроков
-        public void InputGameParameters(out string answerName, out int answerPlayerCount, out int answerDifficultyBot)
+        private void InputGameParameters(out string answerName, out int answerPlayerCount, out int answerDifficultyBot)
         {
 
 
@@ -77,13 +75,10 @@ namespace ConsoleDurak
                 Color.Cyan("Введите ваше имя:");
                 answerName = Console.ReadLine();
 
-                if (answerName!.Length < 3 || answerName == null)
-                {
-                    Color.Red("Введенное значение подходит. Попробуйте иное имя.");
-                    Console.WriteLine();
-                }
+                //проверка условий
+                if (Table.CheckСonditions(answerName!.Length, 30, 3)) break;
 
-            } while (answerName!.Length < 3 || answerName == null);
+            } while (true);
             Console.WriteLine();
 
 
@@ -91,15 +86,14 @@ namespace ConsoleDurak
             {
                 Color.Cyan("Допустимое количество игроков: 2-4.");
                 Color.Cyan("Введите желаемое количество игроков:");
-                int.TryParse(Console.ReadLine(), out answerPlayerCount);
 
-                if (answerPlayerCount < 2 || answerPlayerCount > 4)
-                {
-                    Color.Red("Введенное значение неверно.");
-                    Console.WriteLine();
-                }
+                answerPlayerCount = PlayerAnswer();
 
-            } while (answerPlayerCount < 2 || answerPlayerCount > 4);
+                //проверка условий
+                if (Table.CheckСonditions(answerPlayerCount, 4, 2)) break;
+
+
+            } while (true);
             Console.WriteLine();
 
 
@@ -108,19 +102,39 @@ namespace ConsoleDurak
             {
                 Color.Cyan("Введите уровень сложности: 1-2.");
                 Color.Red("В данный момент реализован только [1] уровень сложности.");
-                int.TryParse(Console.ReadLine(), out answerDifficultyBot);
 
-                if (answerDifficultyBot < 1 || answerDifficultyBot > 2)
-                {
-                    Color.Red("Введенное значение неверно.");
-                    Console.WriteLine();
-                }
+                answerDifficultyBot = PlayerAnswer();
 
-            } while (answerDifficultyBot < 1 || answerDifficultyBot > 2);
-            Console.WriteLine();
+                //проверка условий
+                if (Table.CheckСonditions(answerDifficultyBot, 2, 1)) break;
+
+            } while (true);
             Console.Clear();
         }
 
 
+
+        //Получение ответа игрока
+        public static int PlayerAnswer()
+        {
+            Color.CyanShort("Ваш ответ: ");
+            int.TryParse(Console.ReadLine(), out int answer);
+            Console.WriteLine();
+            return answer;
+        }
+
+        //проверка условий на ввод данных игроком
+        public static bool CheckСonditions(int answerInput, int MaxRange, int MinRange)
+        {
+            if (answerInput != -1)
+            {
+                if (answerInput > MaxRange && answerInput < MinRange)
+                {
+                    Color.Red("Введенное значение неверно.");
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
