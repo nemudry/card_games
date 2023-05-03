@@ -8,11 +8,11 @@ namespace ConsoleDurak
 {
     public class Table
     {
-        public List<Game> Games { get; set; }
+        private readonly List<Game> games;
 
         public Table()
         {
-            Games = new List<Game>
+            games = new List<Game>
             {
                 new Durak ()
             };
@@ -29,15 +29,15 @@ namespace ConsoleDurak
             do
             {
                 Color.Cyan("Выберите игру :");
-                foreach (Game game in Games)
+                foreach (Game game in games)
                 {
-                    Console.WriteLine($"[{Games.IndexOf(game)+1}] {game.Name}.");
+                    Console.WriteLine($"[{games.IndexOf(game)+1}] {game.Name}.");
                 }
 
                 answerGame = PlayerAnswer();
 
                 //проверка условий
-                if (Table.CheckСonditions(answerGame, Games.Count(), 1)) break;
+                if (Table.CheckСonditions(answerGame, games.Count(), 1)) break;
 
 
             } while (true);
@@ -114,8 +114,8 @@ namespace ConsoleDurak
 
 
 
-        //Получение ответа игрока
-        public static int PlayerAnswer()
+        //Получение ответа игрока, используется внутри сборки
+        internal static int PlayerAnswer()
         {
             Color.CyanShort("Ваш ответ: ");
             int.TryParse(Console.ReadLine(), out int answer);
@@ -124,13 +124,14 @@ namespace ConsoleDurak
         }
 
         //проверка условий на ввод данных игроком
-        public static bool CheckСonditions(int answerInput, int MaxRange, int MinRange)
+        internal static bool CheckСonditions(int answerInput, int MaxRange, int MinRange)
         {
             if (answerInput != -1)
             {
-                if (answerInput > MaxRange && answerInput < MinRange)
+                if (! (answerInput >= MinRange && answerInput <= MaxRange) )
                 {
                     Color.Red("Введенное значение неверно.");
+                    Console.WriteLine();
                     return false;
                 }
             }

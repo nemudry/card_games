@@ -13,13 +13,12 @@ namespace ConsoleDurak
     public abstract class Player
     { 
 
-        public string Name { get; set; } 
+        internal string Name { get; set; }
+        internal List<Card> PlayerKoloda { get; set; }
+        internal Status PlayerStatus { get; set; }
 
-        public List<Card> PlayerKoloda { get; set; }
-        public Status PlayerStatus { get; set; }
 
-
-        public enum Status
+        internal enum Status
         {
             Neitral,
             Attacking,            
@@ -28,11 +27,11 @@ namespace ConsoleDurak
         }
 
         //атака 
-        public abstract Card Attack(Card kozyr, List<Card> cardsInGame);
+        internal abstract Card Attack(Card kozyr, List<Card> cardsInGame);
 
 
         //защита
-        public abstract Card Defend(Card kozyr, List<Card> cardsInGame);
+        internal abstract Card Defend(Card kozyr, List<Card> cardsInGame);
 
 
 

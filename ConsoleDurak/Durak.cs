@@ -12,18 +12,18 @@ using static ConsoleDurak.Koloda;
 
 namespace ConsoleDurak
 {
-    public class Durak : Game
+    internal class Durak : Game
     {
-        public Koloda Desk { get; set; }
-        public Card Kozyr { get; set; }
+        private Koloda Desk { get; }
+        private Card Kozyr { get; set; }
 
 
-        public Durak()
+        internal Durak()
         {
             Name = "Дурак подкидной";
         }
 
-        public Durak(string playerName, int amountOfPlayers, int botLevel)
+        internal Durak(string playerName, int amountOfPlayers, int botLevel)
         {
 
             Name = "Дурак подкидной";
@@ -79,12 +79,12 @@ namespace ConsoleDurak
 
                 //Перемешать колоду
                 Random random = new Random();
-                var kolodaforShuffle = Desk.GetKoloda.ToList<Card>();
-                Desk.GetKoloda.Clear();
+                var kolodaforShuffle = Desk.Cards.ToList<Card>();
+                Desk.Cards.Clear();
                 for (int card; kolodaforShuffle.Count() > 0; kolodaforShuffle.Remove(kolodaforShuffle[card]))
                 {
                     card = random.Next(0, kolodaforShuffle.Count());
-                    Desk.GetKoloda.Push(kolodaforShuffle[card]);// создание перемешанной колоды    
+                    Desk.Cards.Push(kolodaforShuffle[card]);// создание перемешанной колоды    
                 }
 
                 //раздача карт
@@ -92,13 +92,13 @@ namespace ConsoleDurak
                 {
                     for (int i = 0; i < 6; i++)
                     {
-                        player.PlayerKoloda.Add(Desk.GetKoloda.Pop());  
+                        player.PlayerKoloda.Add(Desk.Cards.Pop());  
                     }
                 }
 
 
                 //козырь в игре
-                Kozyr = Desk.GetKoloda.ToArray<Card>().Last();
+                Kozyr = Desk.Cards.ToArray<Card>().Last();
                 Color.Cyan($"Козырь в игре - {Kozyr.GetNominal}, {Kozyr.GetMast}");
                 Thread.Sleep(1000);
 
@@ -163,7 +163,7 @@ namespace ConsoleDurak
 
 
                     //Донабор карт. если в колоде есть карты
-                    if (Desk.GetKoloda.Any())
+                    if (Desk.Cards.Any())
                     {
                         //Фаза донабора карт из колоды
                         PhaseDonaborKart(Players, attackPlayer, defendPlayer, Desk, Kozyr);
@@ -260,10 +260,10 @@ namespace ConsoleDurak
                         Thread.Sleep(1000);
 
                         //Количество карт в колоде, если там в принципе есть карты
-                        if (Desk.GetKoloda.Any())
+                        if (Desk.Cards.Any())
                         {
                             Color.CyanShort($"Количество карт в колоде: ");
-                            Color.Red($"{Desk.GetKoloda.Count()}");
+                            Color.Red($"{Desk.Cards.Count()}");
                             Console.WriteLine();
                         }
                         Thread.Sleep(2500);
@@ -861,7 +861,7 @@ namespace ConsoleDurak
 
 
                 donaboredPlayers.Add(attackPlayer); // пытающийся брать из колоды добавляется в список
-                if (attackPlayer.PlayerKoloda.Count() < 6 && desk.GetKoloda.Any())
+                if (attackPlayer.PlayerKoloda.Count() < 6 && desk.Cards.Any())
                 {
                     Color.Green($"Игрок {attackPlayer.Name} берет карты из колоды.");
                     Thread.Sleep(1000);
@@ -878,11 +878,11 @@ namespace ConsoleDurak
                 {
                     if (!isDeskEmpty) // если колода не пуста, игрок берет карты пока в руке не окажется 6 карт
                     {
-                        Desk.GetKoloda.TryPop(out newCard);
+                        Desk.Cards.TryPop(out newCard);
                         attackPlayer.PlayerKoloda.Add(newCard); //добавление карты в руку
 
                         //если в колоде кончились карты
-                        if (desk.GetKoloda.Count() == 0)
+                        if (desk.Cards.Count() == 0)
                         {
                             Color.Cyan($"Игрок забирает последнюю карту из колоды - козырь {newCard.GetNominal}, {newCard.GetMast}.");
                             isDeskEmpty = true;

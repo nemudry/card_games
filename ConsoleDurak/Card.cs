@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace ConsoleDurak
 {
-    public class Card
+    internal class Card
     {
-        public Mast GetMast { get; }
-        public Nominal GetNominal { get; }
+        internal Mast GetMast { get; }
+        internal Nominal GetNominal { get; }
 
-        public Card(Nominal nominal, Mast mast)
+        internal Card(Nominal nominal, Mast mast)
         {
             GetMast = mast;
             GetNominal = nominal;
@@ -21,7 +21,7 @@ namespace ConsoleDurak
 
 
         //доступные номиналы карт в игре
-        public enum Nominal
+        internal enum Nominal
         {
             Два = 1,
             Три,
@@ -39,7 +39,7 @@ namespace ConsoleDurak
         }
 
         //доступные масти карт в игре
-        public enum Mast
+        internal enum Mast
         {
             буби = 1,
             черви,
@@ -49,7 +49,7 @@ namespace ConsoleDurak
 
 
         //cтатическое свойство для cортировки карт по номиналу в руке живого игрока
-        public static IComparer<Card> SortByNominal
+        internal static IComparer<Card> SortByNominal
         {
             get { return new CardComparer(); }
         }
@@ -58,7 +58,7 @@ namespace ConsoleDurak
 
 
 //сортировщик для cортировки карт по номиналу в руке живого игрока
-public class CardComparer : IComparer<Card>
+internal class CardComparer : IComparer<Card>
 {
     int IComparer<Card>.Compare(Card one, Card two)
     {

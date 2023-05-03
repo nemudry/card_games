@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace ConsoleDurak
 {
-    public abstract class Game
+    internal abstract class Game
     {
-        public string Name { get; set; }
+        internal string Name { get; set; }
 
-        public List<Player> Players { get; set; }
+        protected List<Player> Players { get; set; }
 
     }
 }

@@ -9,16 +9,16 @@ using static ConsoleDurak.Card;
 namespace ConsoleDurak
 {
 
-    public class Koloda
+    internal class Koloda
     {
         //колода в игре
-        public Stack<Card> GetKoloda { get; set; }
+        internal Stack<Card> Cards { get; }
 
 
         // создание новой колоды на 36 карт
-        public Koloda(int amountOfCards)
+        internal Koloda(int amountOfCards)
         {
-            GetKoloda = new Stack<Card>();
+            Cards = new Stack<Card>();
 
             if (amountOfCards == 36)
             { 
@@ -27,7 +27,7 @@ namespace ConsoleDurak
                 {
                     for (Card.Mast mast = Card.Mast.буби; mast <= Card.Mast.крести; mast++)
                     {
-                        GetKoloda.Push(new Card(nominal, mast));
+                        Cards.Push(new Card(nominal, mast));
                     }
                 }
             }
@@ -39,7 +39,7 @@ namespace ConsoleDurak
                 {
                     for (Card.Mast mast = Card.Mast.буби; mast <= Card.Mast.крести; mast++)
                     {
-                        GetKoloda.Push(new Card(nominal, mast));
+                        Cards.Push(new Card(nominal, mast));
                     }
                 }
             }

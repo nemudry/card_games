@@ -1,37 +1,18 @@
 ﻿namespace ConsoleDurak
 {
 
-    public class VirtualPlayer : Player
+    internal class VirtualPlayer : Player
     {
-        public VirtualPlayer(string name)
+        internal VirtualPlayer(string name)
         {
             Name = name;
             PlayerStatus = Status.Neitral;
-
             PlayerKoloda = new List<Card>();
         }
 
 
-        //выбирается наименьшая карта по номиналу 
-        private Card CardMin(Card card, Card x)
-        {
-            if (x.GetNominal <= card!.GetNominal)
-            {
-                card = x;
-            }
-            return card;
-        }
 
-        private Card CardNull (Card card, Card x)
-        {
-            if (card == null)
-            {
-                card = x;
-            }
-            return card;
-        }
-
-        public override Card Attack(Card kozyr, List<Card> cardsInGame)
+        internal override Card Attack(Card kozyr, List<Card> cardsInGame)
         {
             //карта для атаки
             Card attack = null;
@@ -40,8 +21,6 @@
             // если в игре нет карт - первая атака
             if (cardsInGame.Count == 0)
             {
-                //карта для атаки, выбирается одна для сравнения с остальными
-                attack = PlayerKoloda.First();
 
                 foreach (var card in PlayerKoloda)
                 {
@@ -57,13 +36,7 @@
                         //выбор некозыря
                         if (card.GetMast != kozyr.GetMast)
                         {
-                            //на случай, если первая карта в руке козырь, она сбрасывается на первый некозырь
-                            if (attack.GetMast == kozyr.GetMast)
-                            {
-                                attack = card;
-                            }
-
-                            //затем выбирается наименьший некозырь
+                            //выбирается наименьший некозырь
                             attack = CardMin(attack, card);
                         }
                     }
@@ -92,8 +65,6 @@
                         if (nominals.Contains(card.GetNominal))
                         {
 
-                            attack = CardNull(attack, card);
-
                             attack = CardMin(attack, card);
 
                         }
@@ -107,7 +78,7 @@
         }
 
 
-        public override Card Defend(Card kozyr, List<Card> cardsInGame)
+        internal override Card Defend(Card kozyr, List<Card> cardsInGame)
         {
             //карта для защиты
             Card defend = null;
@@ -124,8 +95,6 @@
                     {
                         if (card.GetNominal > cardsInGame.Last().GetNominal)
                         {
-                            defend = CardNull(defend, card);
-
                             defend = CardMin(defend, card);
                         }
                     }
@@ -140,8 +109,6 @@
 
                         if (card.GetMast == kozyr.GetMast)
                         {
-                            defend = CardNull(defend, card);
-
                             //выбирается меньший некозырь по номиналу
                             defend = CardMin(defend, card);
                         }
@@ -160,8 +127,6 @@
                     {
                         if (card.GetNominal > cardsInGame.Last().GetNominal)
                         {
-                            defend = CardNull(defend, card);
-
                             //выбирается меньший некозырь по номиналу
                             defend = CardMin(defend, card);
                         }
@@ -176,6 +141,22 @@
         }
 
 
+
+
+        //выбирается наименьшая карта по номиналу 
+        private Card CardMin(Card card, Card x)
+        {
+            if (card == null)
+            {
+                card = x;
+            }
+
+            if (x.GetNominal <= card!.GetNominal)
+            {
+                card = x;
+            }
+            return card;
+        }
     }
 }
 

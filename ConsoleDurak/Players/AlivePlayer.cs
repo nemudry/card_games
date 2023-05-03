@@ -6,21 +6,19 @@ using System.Threading.Tasks;
 
 namespace ConsoleDurak
 {
-    public class AlivePlayer : Player
+    internal class AlivePlayer : Player
     {
-        public AlivePlayer(string name)
+        internal AlivePlayer(string name)
         {
             Name = name;
             PlayerStatus = Status.Neitral;
-
             PlayerKoloda = new List<Card>();
-
         }
 
 
 
 
-        public override Card Attack(Card kozyr, List<Card> cardsInGame)
+        internal override Card Attack(Card kozyr, List<Card> cardsInGame)
         {
 
 
@@ -79,7 +77,7 @@ namespace ConsoleDurak
                         return attack;
                     }
 
-                    if (!Table.CheckСonditions(answerAttack, PlayerKoloda.Count, 1)) break;
+                    if (Table.CheckСonditions(answerAttack, PlayerKoloda.Count, 1)) break;
 
                     // соответствие выбранного номинала картам в игре
                     else
@@ -107,40 +105,40 @@ namespace ConsoleDurak
 
 
 
-        public override Card Defend(Card kozyr, List<Card> cardsInGame)
+        internal override Card Defend(Card kozyr, List<Card> cardsInGame)
         {
             //карта для атаки
             Card defend = null;
             int answerDefend = 0;
             PlayerKoloda.Sort(Card.SortByNominal); // сортировка карт по номиналу
 
-
             do
             {
-                //показать руку
-                HandInfo(kozyr);
-                Console.WriteLine($"[-1]. Не защищаться.");
-                Console.WriteLine();
-
-
-                //ответ игрока
-                answerDefend = Table.PlayerAnswer();
-
-                // Не защищаться
-                if (answerDefend == -1)
+                do
                 {
-                    return defend;
-                }
+                    //показать руку
+                    HandInfo(kozyr);
+                    Console.WriteLine($"[-1]. Не защищаться.");
+                    Console.WriteLine();
 
-                // ввод неверного числа 
-                if (!Table.CheckСonditions(answerDefend, PlayerKoloda.Count, 1)) break;
 
+                    //ответ игрока
+                    answerDefend = Table.PlayerAnswer();
 
-                //условия защиты согласно правилам игры
-                else
-                {
-                    if (DefendCheck()) break;
-                }
+                    // Не защищаться
+                    if (answerDefend == -1)
+                    {
+                        return defend;
+                    }
+
+                    // ввод неверного числа 
+                    if (Table.CheckСonditions(answerDefend, PlayerKoloda.Count, 1)) break;
+
+                } while (true);
+
+                //условия защиты согласно правилам игры  
+                if (DefendCheck()) break;
+
 
             } while (true);
 
