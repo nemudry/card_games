@@ -8,9 +8,9 @@ namespace ConsoleDurak
 {
     internal abstract class Game
     {
-        internal string Name { get; set; }
+        internal virtual string Name { get; }
 
-        protected List<Player> Players { get; set; }
+        protected virtual List<Player> Players { get; }
 
     }
 }

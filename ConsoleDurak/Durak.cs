@@ -17,6 +17,8 @@ namespace ConsoleDurak
         private Koloda Desk { get; }
         private Card Kozyr { get; set; }
 
+        internal override string Name { get; }
+        protected override List<Player> Players { get; }
 
         internal Durak()
         {
