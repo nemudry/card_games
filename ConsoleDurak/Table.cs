@@ -8,7 +8,7 @@ namespace ConsoleDurak
 {
     public class Table
     {
-        private readonly List<Game> games;
+        private readonly IReadOnlyList<Game> games;
 
         public Table()
         {
@@ -28,10 +28,11 @@ namespace ConsoleDurak
             int answerGame;
             do
             {
+                int number = 0;
                 Color.Cyan("Выберите игру :");
                 foreach (Game game in games)
                 {
-                    Console.WriteLine($"[{games.IndexOf(game)+1}] {game.Name}.");
+                    Console.WriteLine($"[{++number}] {game.Name}.");
                 }
 
                 answerGame = PlayerAnswer();
