@@ -55,7 +55,7 @@ namespace ConsoleDurak
                     Color.Cyan("Добро пожаловать в карточную игру \"Дурак\".");
                     Console.WriteLine();
                     Durak durak = new Durak(playerName, amountOfPlayers, botLevel);
-                    durak.StartGame();
+                    durak.RunGame();
                     break;
                 default: break;
             }        
@@ -125,11 +125,12 @@ namespace ConsoleDurak
         }
 
         //проверка условий на ввод данных игроком
-        internal static bool CheckСonditions(int answerInput, int MaxRange, int MinRange)
+        internal static bool CheckСonditions(int answerInput, int MaxRange, int MinRange, params int[] exeptions)
         {
-            if (answerInput != -1)
+
+            if (!exeptions.Contains(answerInput))
             {
-                if (! (answerInput >= MinRange && answerInput <= MaxRange) )
+                if (!(answerInput >= MinRange && answerInput <= MaxRange))
                 {
                     Color.Red("Введенное значение неверно.");
                     Console.WriteLine();

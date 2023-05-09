@@ -6,7 +6,7 @@
         internal VirtualPlayer(string name)
         {
             Name = name;
-            PlayerStatus = Status.Neitral;
+            PlayerStatus = status.Нейтральный;
             PlayerKoloda = new List<Card>();
         }
 

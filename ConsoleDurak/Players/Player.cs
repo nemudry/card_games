@@ -15,15 +15,15 @@ namespace ConsoleDurak
 
         internal string Name { get; set; }
         internal List<Card> PlayerKoloda { get; set; }
-        internal Status PlayerStatus { get; set; }
+        internal status PlayerStatus { get; set; }
 
 
-        internal enum Status
+        internal enum status
         {
-            Neitral,
-            Attacking,            
-            Defending,
-            QuitTheGame
+            Атакующий,
+            Нейтральный,
+            Защищающийся,
+            ВышелИзИгры
         }
 
         //атака 

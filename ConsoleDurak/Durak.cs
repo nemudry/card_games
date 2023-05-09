@@ -14,21 +14,41 @@ namespace ConsoleDurak
 {
     internal class Durak : Game
     {
-        private Koloda Desk { get; }
-        private Card Kozyr { get; set; }
 
         internal override string Name { get; }
+        private int BotLevel { get; }
+        private Koloda Desk { get; }
+        private List<Card> CardsInGame { get; }
+
+        private Card Kozyr { get; set; }
         protected override List<Player> Players { get; }
+        internal statusGame DurakStatus { get; set; }
+        internal enum statusGame
+        {
+            НачалоХода,
+            КонецХода,
+            КонецИгры,
+        }
+
+
 
         internal Durak()
         {
             Name = "Дурак подкидной";
         }
 
+
+
         internal Durak(string playerName, int amountOfPlayers, int botLevel)
         {
 
             Name = "Дурак подкидной";
+            BotLevel = botLevel;
+            DurakStatus = statusGame.НачалоХода;
+            Desk = new Koloda(36);
+            Kozyr = null;
+            CardsInGame = new List<Card>(12); 
+
             Players = new List<Player>();
             Players.Add(new AlivePlayer(playerName));  // Живой игрок
 
@@ -50,33 +70,74 @@ namespace ConsoleDurak
                 default: break;
             };
 
-            Desk = new Koloda(36);
-            Kozyr = null;
+
 
         }
 
 
 
 
-        Player defendPlayer, attackPlayer; //атакующий и защищающийся игроки
-    
+        //Player defendPlayer, attackPlayer; //атакующий и защищающийся игроки
+
+
+        //Очередность игроков в игре
+        private void PlayersInfo ()
+        {
+            Color.Cyan("Очередность игроков в игре:");
+            foreach (Player player in Players)
+            {
+                if (player.PlayerStatus != Player.status.ВышелИзИгры)
+                {
+                    Console.WriteLine($"{Players.IndexOf(player) + 1}. {player.Name}.");
+                }
+            }
+            Console.WriteLine();
+            Thread.Sleep(1000);
+        }
+
+        private Player NextPlayer(Player player)
+        {
+            //определение игрока
+            int currentIndexOfPlayer = Players.IndexOf(player);//индекс игрока
+            Player nextPlayer;
+            try
+            {
+                do
+                {
+                    if (Players[++currentIndexOfPlayer].PlayerStatus != Player.status.ВышелИзИгры)
+                    {
+                        nextPlayer = Players[currentIndexOfPlayer];
+                        break;
+                    }
+
+                } while (true);
+                
+            }
+            catch (ArgumentOutOfRangeException x)
+            {
+                currentIndexOfPlayer = -1;
+                do
+                {
+                    if (Players[++currentIndexOfPlayer].PlayerStatus != Player.status.ВышелИзИгры)
+                    {
+                        nextPlayer = Players[currentIndexOfPlayer];
+                        break;
+                    }
+                } while (true);
+
+            }
+            return nextPlayer;
+        }
 
 
 
 
-
-        public void StartGame()
+        public void RunGame()
         {
             try
             {
                 //Очередность игроков в игре
-                Color.Cyan("Очередность игроков в игре:");
-                foreach (Player player in Players)
-                {
-                    Console.WriteLine($"{Players.IndexOf(player) + 1}. {player.Name}.");
-                }
-                Console.WriteLine();
-                Thread.Sleep(1000);
+                PlayersInfo();
 
 
                 //Перемешать колоду
@@ -106,313 +167,19 @@ namespace ConsoleDurak
 
 
                 //кто первый ходит
-                WhoFirstHod(Players, Kozyr, out Card firstHod, out attackPlayer);
+                WhoFirstHod(Players, Kozyr, out Card firstHod, out Player firstHodPlayer);
+                firstHodPlayer.PlayerStatus = Player.status.Атакующий;
                 Color.GreenShort($"Наименьший козырь {firstHod.GetNominal}, {firstHod.GetMast}. ");
-                Color.Cyan($"Первым ходит {attackPlayer.Name}.");
+                Color.Cyan($"Первым ходит {firstHodPlayer.Name}.");
                 Console.WriteLine();
                 Thread.Sleep(2500);
-                Console.Clear();
-
-
+                Console.Clear();                
 
 
                 //определение защищающегося игрока
-                int currentIndexOfAttackPlayer = Players.IndexOf(attackPlayer);//индекс атакующего игрока
-                try
-                {
-                    defendPlayer = Players[currentIndexOfAttackPlayer + 1]; //защищающийся игрок следующий по списку после атакующегося
-                }
-                catch (ArgumentOutOfRangeException x)
-                {
-                    defendPlayer = Players[0]; // если список закончился, то защищается первый игрок в списке
-                }
+                NextPlayer(firstHodPlayer).PlayerStatus = Player.status.Защищающийся;
 
-
-                /// Показ карт на руках у всех игроков
-                /*
-                 foreach (Player player in players)
-                 {
-                     player.ShowCardsInHand(kozyr);
-                     Console.WriteLine();
-                 }
-                 */
-
-
-                bool isEndOfGameDurak = false; //игра закончилась
-                do
-                {
-                    Color.Cyan($"Начало хода.");
-                    Console.WriteLine();
-                    Thread.Sleep(2000);
-
-                    Color.CyanShort($"Атакует игрок ");
-                    Color.GreenShort($"{attackPlayer.Name}");
-                    Color.CyanShort($", защищается игрок ");
-                    Color.Red($"{defendPlayer.Name}");
-                    Console.WriteLine();
-                    Thread.Sleep(1000);
-
-
-
-                    //Фаза игрового хода. Игроки атакуют, защищающийся защищается
-                    bool whoWinGame = PhaseGameHod(Players, attackPlayer, defendPlayer, Desk, Kozyr, 1);
-                    Thread.Sleep(1500);
-                    Console.Clear();
-
-
-                    //Войсы.
-                   // VoiceOfPlayers();
-
-
-                    //Донабор карт. если в колоде есть карты
-                    if (Desk.Cards.Any())
-                    {
-                        //Фаза донабора карт из колоды
-                        PhaseDonaborKart(Players, attackPlayer, defendPlayer, Desk, Kozyr);
-                        Console.WriteLine();
-                        Thread.Sleep(1500);
-                    }
-
-                    ///Показ карт на руках у всех игроков
-                    /*
-                    foreach (Player player in players)
-                    {
-                        player.ShowCardsInHand(kozyr);
-                        Console.WriteLine();
-                    }
-                    */
-
-
-                    //Фаза выхода игрока из игры
-                    ExitPlayer();
-
-
-                    //Инфо об игре. Очередность игроков в игре и количество карт в игре и на руках
-                    ProcessGameInfo();
-
-
-                    //Проверка. Конец игры
-                    if (EndofGame()) break;
-
-
-                    //смена защищающегося и атакующего игрока                                
-                    if (!isEndOfGameDurak)
-                    {
-                        ChangeAttackPlayerInGame();
-                    }
-
-
-                    /*
-                    //Войсы.
-                    void VoiceOfPlayers()
-                    {
-                        //Войсы. Если отзащищался успешно
-                        if (whoWinGame)
-                        {
-                            //войсы. Игрок произносит речь
-                            defendPlayer.GoodVoice();
-                            attackPlayer.BadVoice();
-                        }
-                        //Если отзащищался неуспешно
-                        else
-                        {
-                            //войсы. Игрок произносит речь
-                            defendPlayer.BadVoice();
-                            attackPlayer.GoodVoice();
-                        }
-                        Console.Clear();
-                    }
-                    */
-
-                    //Фаза выхода игрока из игры
-                    void ExitPlayer()
-                    {
-                        List<Player> ExitPlayers = new List<Player>();
-                        foreach (Player player in Players)
-                        {
-                            //если после донабора, у игрока нет на руках карт
-                            if (player.PlayerKoloda.Count() == 0)
-                            {
-                                ExitPlayers.Add(player);
-                                Color.Green($"Игрок {player.Name} вышел из игры.");
-                                Console.WriteLine();
-                                Thread.Sleep(1500);
-
-                                //довольный войс
-                                //player.GoodVoice();
-                                Thread.Sleep(1000);
-                            }
-                        }
-                        foreach (Player player in ExitPlayers)
-                        {
-                            Players.Remove(player); // удаление игрока
-                        }
-                    }
-
-                    //Очередность игроков в игре и количество карт
-                    void ProcessGameInfo ()
-                    {
-                        //Очередность игроков в игре и количество карт
-                        Color.Cyan("Очередность игроков в игре:");
-                        foreach (Player player in Players)
-                        {
-                            Console.WriteLine($"{Players.IndexOf(player) + 1}. {player.Name}, количество карт на руках - {player.PlayerKoloda.Count()}.");
-                        }
-                        Console.WriteLine();
-                        Thread.Sleep(1000);
-
-                        //Количество карт в колоде, если там в принципе есть карты
-                        if (Desk.Cards.Any())
-                        {
-                            Color.CyanShort($"Количество карт в колоде: ");
-                            Color.Red($"{Desk.Cards.Count()}");
-                            Console.WriteLine();
-                        }
-                        Thread.Sleep(2500);
-                        Console.Clear();
-                    }
-
-                    //смена защищающегося и атакующего игрока   
-                    void ChangeAttackPlayerInGame()
-                    {
-
-                        //если ранее игрок успешно отзащищался
-                        if (whoWinGame)
-                        {
-                            //начинает атаковать тот, кто успешно ранее отзащищался
-                            try
-                            {
-                                //если игрок ранее отзащищался, у него закончились карты и он вышел из игры - смена логики смены игрока
-                                if (!Players.Contains(defendPlayer)) throw new Exception();
-
-
-                                //начинает атаковать тот, кто ранее успешно отзащищался
-                                attackPlayer = defendPlayer;
-                                currentIndexOfAttackPlayer = Players.IndexOf(attackPlayer);
-                                /// Color.Green($"1 Игрок {attackPlayer.Name} {currentIndexOfAttackPlayer} атакует.");
-
-
-                                //выбор нового защищающегося игрока. Защищается следущий игрок
-                                try
-                                {
-                                    defendPlayer = Players[currentIndexOfAttackPlayer + 1];
-                                }
-                                catch (ArgumentOutOfRangeException x)
-                                {
-                                    defendPlayer = Players[0];
-                                }
-
-                            }
-
-                            catch (Exception y)
-                            {
-                                //если успешно защитившийся игрок вышел из игры
-                                try
-                                {
-                                    // тогда атакует следующий после вышедшего игрока
-                                    currentIndexOfAttackPlayer = Players.IndexOf(attackPlayer) + 1;
-                                    attackPlayer = Players[currentIndexOfAttackPlayer];
-                                    ///  Color.Green($"2 Игрок {attackPlayer.Name} {currentIndexOfAttackPlayer} атакует.");
-
-
-                                    //выбор нового защищающегося игрока. Защищается следущий игрок
-                                    try
-                                    {
-                                        defendPlayer = Players[currentIndexOfAttackPlayer + 1];
-                                    }
-                                    catch (ArgumentOutOfRangeException x)
-                                    {
-                                        defendPlayer = Players[0];
-                                    }
-                                }
-
-
-                                catch (ArgumentOutOfRangeException x)
-                                {
-                                    //когда атакует следующий игрок, но вылетает исключение конца списка для перебора, атакует первый игрок в списке
-                                    currentIndexOfAttackPlayer = 0;
-                                    attackPlayer = Players[currentIndexOfAttackPlayer];
-                                    ///   Color.Green($"3 Игрок {attackPlayer.Name} {currentIndexOfAttackPlayer} атакует.");
-                                    ///   Color.Green($"3 Игрок  атакует.");
-
-
-                                    //выбор нового защищающегося игрока. Защищается следущий игрок
-                                    try
-                                    {
-                                        defendPlayer = Players[currentIndexOfAttackPlayer + 1];
-                                    }
-                                    catch (ArgumentOutOfRangeException z)
-                                    {
-                                        defendPlayer = Players[0];
-                                    }
-                                }
-                            }
-                        }
-
-
-
-                        //если игрок не защитился
-                        else
-                        {
-                            try
-                            {
-                                //То атакует следующий после защищавшегося
-                                attackPlayer = Players[Players.IndexOf(defendPlayer) + 1];
-                                currentIndexOfAttackPlayer = Players.IndexOf(attackPlayer);
-
-                                //выбор нового защищающегося игрока. Защищается следущий игрок
-                                try
-                                {
-                                    defendPlayer = Players[currentIndexOfAttackPlayer + 1];
-                                }
-                                catch (ArgumentOutOfRangeException x)
-                                {
-                                    defendPlayer = Players[0];
-                                }
-
-                            }
-
-                            catch (ArgumentOutOfRangeException x)
-                            {
-                                //когда атакует следующий игрок, но вылетает исключение конца списка для перебора, атакует первый игрок в списк
-                                currentIndexOfAttackPlayer = 0;
-                                attackPlayer = Players[currentIndexOfAttackPlayer];
-
-                                //выбор нового защищающегося игрока. Защищается следущий игрок
-                                try
-                                {
-                                    defendPlayer = Players[currentIndexOfAttackPlayer + 1];
-                                }
-                                catch (ArgumentOutOfRangeException y)
-                                {
-                                    defendPlayer = Players[0];
-                                }
-                            }
-                        }
-                    }
-
-                    //Проверка. Конец игры
-                    bool EndofGame ()
-                    {
-                        // если в игре остался один игрок - конец игре
-                        foreach (Player player in Players)
-                        {
-                            if (Players.Count() == 1)
-                            {
-                                Color.Cyan($"Игрок {player.Name} проиграл. {player.Name} - дурак!");
-                                Console.WriteLine();
-                                isEndOfGameDurak = true;
-                                Thread.Sleep(1500);
-
-                               // player.BadVoice();
-                                Thread.Sleep(1000);
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-
-                } while (!isEndOfGameDurak);
+                StartGame();
 
                 Color.Red("Конец игры.");
             }
@@ -430,13 +197,409 @@ namespace ConsoleDurak
 
 
 
+        private void StartGame()
+        {
 
- 
+            do
+            {
+                Color.Cyan($"Начало хода.");
+                DurakStatus = statusGame.НачалоХода;
+                Console.WriteLine();
+                foreach (Player player in Players)
+                {
+                    if (player.PlayerStatus == Player.status.Атакующий)
+                    {
+                        Color.CyanShort($"Атакует игрок ");
+                        Color.Green($"{player.Name}.");
+                    }
+
+                    if (player.PlayerStatus == Player.status.Защищающийся)
+                    {
+                        Color.CyanShort($"Защищается игрок ");
+                        Color.Red($"{player.Name}.");
+                    }
+
+                }
+                Console.WriteLine();
+                Thread.Sleep(1000);
+
+
+
+                //Фаза игрового хода. Игроки атакуют, защищающийся защищается
+                bool whoWinGameHod = GameHod();
+                Thread.Sleep(1500);
+                Console.Clear();
+
+
+
+                //Донабор карт. если в колоде есть карты
+                if (Desk.Cards.Any())
+                {
+                    //Фаза донабора карт из колоды
+                    DonaborKart();
+                    Console.WriteLine();
+                    Thread.Sleep(1500);
+                }
+
+
+                //смена защищающегося и атакующего игрока     
+                ChangeAttackPlayerInGame();
+
+
+
+                //Выход игрока из игры
+                foreach (Player player in Players)
+                {
+                    if (player.PlayerStatus != Player.status.ВышелИзИгры)
+                    {
+                        //если после донабора, у игрока нет на руках карт
+                        if (player.PlayerKoloda.Count() == 0)
+                        {
+                            if (player.PlayerStatus == Player.status.Атакующий)
+                            {
+                                Player next = NextPlayer(player);
+                                next.PlayerStatus = Player.status.Атакующий;
+                                player.PlayerStatus = Player.status.ВышелИзИгры;
+                                Player next2 = NextPlayer(next);
+                                next2.PlayerStatus = Player.status.Защищающийся;
+
+                                Color.Green($"Игрок {player.Name} вышел из игры.");
+                                Console.WriteLine();
+                                Thread.Sleep(1500);
+
+                            }
+
+                            if (player.PlayerStatus == Player.status.Защищающийся)
+                            {
+                                Player next = NextPlayer(player);
+                                next.PlayerStatus = Player.status.Защищающийся;
+                                player.PlayerStatus = Player.status.ВышелИзИгры;
+
+                                Color.Green($"Игрок {player.Name} вышел из игры.");
+                                Console.WriteLine();
+                                Thread.Sleep(1500);
+                            }
+
+
+                            if (player.PlayerStatus == Player.status.Нейтральный)
+                            {
+                                player.PlayerStatus = Player.status.ВышелИзИгры;
+                                Color.Green($"Игрок {player.Name} вышел из игры.");
+                                Console.WriteLine();
+                                Thread.Sleep(1500);
+                            }
+
+                        }
+                    }
+                }
+
+
+
+                //Инфо об игре. Очередность игроков в игре и количество карт в игре и на руках              
+                PlayersInfo();
+                if (Desk.Cards.Any())
+                {
+                    Color.CyanShort($"Количество карт в колоде: ");
+                    Color.Red($"{Desk.Cards.Count()}");
+                    Console.WriteLine();
+                }
+                Thread.Sleep(2500);
+                Console.Clear();
+
+
+                //Проверка. Конец игры
+                if (EndofGame()) break;
+
+
+                // выход из игры                          
+                if (DurakStatus == statusGame.КонецИгры) break;
+
+
+                //смена защищающегося и атакующего игрока   
+                void ChangeAttackPlayerInGame()
+                {
+
+                    //если ранее игрок успешно отзащищался
+                    if (whoWinGameHod)
+                    {
+                        Player attack = AttackPlayer();
+                        attack.PlayerStatus = Player.status.Нейтральный;
+                        Player defend = DefendPlayer();
+                        defend.PlayerStatus = Player.status.Атакующий;
+                        Player next = NextPlayer(defend);
+                        next.PlayerStatus = Player.status.Защищающийся;
+                    }
+
+
+                    //если игрок не защитился
+                    else
+                    {
+                        Player attack = AttackPlayer();
+                        attack.PlayerStatus = Player.status.Нейтральный;
+                        Player defend = DefendPlayer();
+                        defend.PlayerStatus = Player.status.Нейтральный;
+                        Player next = NextPlayer(defend);
+                        next.PlayerStatus = Player.status.Атакующий;
+                        Player next2 = NextPlayer(next);
+                        next2.PlayerStatus = Player.status.Защищающийся;
+                    }
+                }
+
+
+
+
+                //Проверка. Конец игры
+                bool EndofGame()
+                {
+                    var LastPlayer = (from player in Players
+                                     where player.PlayerStatus != Player.status.ВышелИзИгры
+                                     select player).ToList();
+
+                    if (LastPlayer.Count() == 1)
+                    {
+                        Color.Cyan($"Игрок {LastPlayer.First().Name} проиграл. {LastPlayer.First().Name} - дурак!");
+                        Console.WriteLine();
+                        DurakStatus = statusGame.КонецИгры;
+                        Thread.Sleep(1500);
+
+                        // player.BadVoice();
+                        Thread.Sleep(1000);
+                        return true;
+                    }
+
+                    return false;
+                }
+
+            } while (true);
+
+
+        }
+
+        private Player AttackPlayer ()
+        {
+            foreach (Player player in Players)
+            {
+                if (player.PlayerStatus == Player.status.Атакующий)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
+
+        private Player DefendPlayer()
+        {
+            foreach (Player player in Players)
+            {
+                if (player.PlayerStatus == Player.status.Защищающийся)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
+
+
+        //Фаза игрового хода. Игроки атакуют, один игрок защищается
+        private bool GameHod()
+        {
+
+            Player attackingPlayer = AttackPlayer();
+            Player defendingPlayer = DefendPlayer();
+            List<Player> AlreadyAttackedPlayer = new List<Player>();
+            Card attackCard; //карта для атаки
+            Card defendCard; // карта для защиты
+            bool whoWinHod = true; // если успешно отзащищался - тру, неуспешно - фолс                                                               
+
+            do 
+            {
+                do 
+                {
+                    // получение карты для атаки 
+                    attackCard = attackingPlayer.Attack(Kozyr, CardsInGame);
+
+                    //если карты для атаки нет
+                    if (attackCard == null)
+                    {
+                        Color.Red($"Игроку {attackingPlayer.Name} нечем атаковать. Атаковать пробуют другие игроки.");
+                        AlreadyAttackedPlayer.Add(attackingPlayer);
+                        Console.WriteLine();
+                        Thread.Sleep(1500);
+                        break; // если карты для атаки нет - выход из цикла атаки-защиты для смены атакующего игрока
+                    }
+
+                    //если карта для атаки есть 
+                    else
+                    {
+                        CardsInGame.Add(attackCard); // она добавляется в карты на столе
+                        AlreadyAttackedPlayer.Clear();
+                        Color.Green($"{attackingPlayer.Name} атакует с карты {attackCard.GetNominal}, {attackCard.GetMast}.");
+                        Console.WriteLine();
+                        Thread.Sleep(1000);
+                    }
+
+                    //Показ карт в игре
+                    ShowCardsInGame(CardsInGame, Kozyr);
+                    Console.WriteLine();
+                    Thread.Sleep(2000);
+
+
+
+
+                    // получение карты для защиты 
+                    defendCard = defendingPlayer.Defend(Kozyr, CardsInGame);
+
+                    //если карты для защиты нет
+                    if (defendCard == null)
+                    {
+                        DurakStatus = statusGame.КонецХода;
+                        whoWinHod = false; // защищающийся проиграл ход
+                        Color.Red($"Игроку {defendingPlayer.Name} нечем защищаться. Он забирает карты со стола, остальные игроки по желанию додают карты.");
+                        Console.WriteLine();
+                        Thread.Sleep(1500);
+
+
+                        //Фаза подкидывания карт
+                        //   PhasePodkid(players, attackPlayer, defendPlayer, cardsInGame, desk, kozyr);
+                       // Thread.Sleep(1000);
+
+
+                        // Проигравший забирает в руку все карты со стола 
+                        foreach (Card card in CardsInGame) defendingPlayer.PlayerKoloda.Add(card);
+                        CardsInGame.Clear(); //карты со стола очищаются
+                        break;
+                    }
+
+                    //если карта для защиты есть
+                    else
+                    {
+                        Color.Green($"{defendingPlayer.Name} защищается картой {defendCard.GetNominal}, {defendCard.GetMast}.");
+                        Console.WriteLine();
+                        Thread.Sleep(2000);
+                        CardsInGame.Add(defendCard);
+                    }
+
+                    //Показ карт в игре
+                    ShowCardsInGame(CardsInGame, Kozyr);
+
+                    //проверка на макс.количество сыгранных карт и наличия карт у защищающегося
+                    if (MaxCardCheck()) break;
+
+                } while (true);
+
+
+                // выбор следующего атакующего игрока
+                if (DurakStatus != statusGame.КонецХода)
+                {
+                    ChangeAttackPlayerInHod();
+                }
+
+
+                //проверка на завершение хода
+                if (EndHodCheck()) break;
+
+
+            } while (true);
+
+
+            Color.Cyan("Передача хода!");
+            Console.WriteLine();
+            Thread.Sleep(500);
+            return whoWinHod;
+
+
+
+
+            //проверка на макс.количество сыгранных карт и наличия карт у защищающегося
+            bool MaxCardCheck()
+            {
+                //если сыграно максимальное количество карт в ходу
+                if (CardsInGame.Count() == 12)
+                {
+                    Color.Cyan($"Сыграно максимальное количество карт.");
+                    Console.WriteLine();
+                    Thread.Sleep(1500);
+                    DurakStatus = statusGame.КонецХода;
+                    whoWinHod = true; // защищающийся выиграл ход
+                    return true;
+                }
+
+                //если у защищавшегося закончились карты
+                if (defendingPlayer.PlayerKoloda.Count() == 0)
+                {
+                    Color.Cyan($"У игрока {defendingPlayer.Name} закончились карты.");
+                    Console.WriteLine();
+                    Thread.Sleep(1500);
+                    DurakStatus = statusGame.КонецХода;
+                    whoWinHod = true;// защищающийся выиграл ход
+                    return true;
+                }
+                return false;
+            }
+
+
+            //меняет атакующего игрока в ходу
+            void ChangeAttackPlayerInHod()
+            {       
+                foreach (Player player in Players)
+                {
+                    if (player.PlayerStatus == Player.status.ВышелИзИгры) AlreadyAttackedPlayer.Add(player);
+                    if (player.PlayerStatus == Player.status.Защищающийся) AlreadyAttackedPlayer.Add(player);
+                }
+
+
+                //если проатаковали не все               
+                if (AlreadyAttackedPlayer.Count() != Players.Count())
+                {
+
+                    var wantAttackPlayers = Players.Except(AlreadyAttackedPlayer).ToList();
+
+                    foreach (var player in wantAttackPlayers)
+                    {
+                        //атакует следущий игрок
+                        attackingPlayer = player;
+                        break;
+                    }
+                }
+
+                else
+                {
+                    whoWinHod = true;
+                    DurakStatus = statusGame.КонецХода;
+                }            
+                
+            }
+
+
+            //проверка на завершение хода
+            bool EndHodCheck()
+            {
+                if (DurakStatus == statusGame.КонецХода) //если ход окончен
+                {
+                    //если защита проиграла
+                    if (!whoWinHod) return true;
+
+                    //если защита выиграла
+                    else
+                    {
+                        Color.Green($"Игрок {defendingPlayer.Name} успешно отзащищался!");
+                        Thread.Sleep(1000);
+                        Console.WriteLine();
+                        CardsInGame.Clear();
+                        return true;
+                    }
+
+                }
+                return false;
+
+            }
+        }
+
 
 
 
         // кто первый ходит
-        public void WhoFirstHod(List<Player> players, Card kozyr, out Card firstHod, out Player firstHodPlayer)
+        private void WhoFirstHod(List<Player> players, Card kozyr, out Card firstHod, out Player firstHodPlayer)
         {
 
             //наименьший козырь в игре, и игрок у которого этот козырь
@@ -503,392 +666,48 @@ namespace ConsoleDurak
 
 
 
-        //Фаза игрового хода. Игроки атакуют, один игрок защищается
-        public bool PhaseGameHod(List<Player> players, Player attackPlayer, Player defendPlayer, Koloda desk, Card kozyr, int botLevel)
-        {
-
-            bool isEndHod = false; // конец хода
-            bool whoWinHod = true; // если успешно отзащищался - тру, неуспешно - фолс
-            
-            Card attackCard; //карта для атаки
-            Card defendCard; // карта для защиты
-
-            List<Card> cardsInGame = new List<Card>(12); // карты в игре
-            List<Player> attackedPlayers = new List<Player>(); //список уже атаковавших игроков
-        //    List<Card> doubleAndTripleCards = defendPlayer.DoubleAndTripleCards(); //список повторящихся карт на руке защитника
-            
-
-            do //цикл защиты-атаки, смены игрока и проверки условий победы в ходе
-            {
-                
-                do //цикл защиты-атаки
-                {
-                    // получение карты для атаки в зависимости от уровня сложности
-                    switch (botLevel)
-                    {
-                        case 1:
-                            attackCard = attackPlayer.Attack(kozyr, cardsInGame);
-                            break;
-                        case 2:
-                            attackCard = attackPlayer.Attack(kozyr, cardsInGame);
-                            break;
-                        default:
-                            attackCard = null;
-                            break;
-                    }
-
-
-                    //если карты для атаки нет
-                    if (attackCard == null)
-                    {                        
-                        NoAttackCard();
-                        break; // если карты для атаки нет - выход из цикла атаки-защиты для смены атакующего игрока
-                    }
-
-                    //если карта для атаки есть 
-                    else
-                    {
-                        cardsInGame.Add(attackCard); // она добавляется в карты на столе
-                        Color.Green($"{attackPlayer.Name} атакует с карты {attackCard.GetNominal}, {attackCard.GetMast}.");
-                        Console.WriteLine();
-                        Thread.Sleep(1000);
-                    }
-
-                    //Показ карт в игре
-                    ShowCardsInGame(cardsInGame, kozyr);
-                    Console.WriteLine();
-                    Thread.Sleep(2000);
-
-
-
-
-                    // получение карты для защиты в зависимости от уровня сложности
-                    switch (botLevel)
-                    {
-                        case 1:
-                            defendCard = defendPlayer.Defend(kozyr, cardsInGame);
-                            break;
-                        case 2:
-                            defendCard = defendPlayer.Defend(kozyr, cardsInGame);
-                            break;
-                        default:
-                            defendCard = null;
-                            break;
-                    }
-
-                    //если карты для защиты нет
-                    if (defendCard == null)
-                    {
-                        isEndHod = true; // конец хода
-                        whoWinHod = false; // защищающийся проиграл ход
-                        Color.Red($"Игроку {defendPlayer.Name} нечем защищаться. Он забирает карты со стола, остальные игроки по желанию додают карты.");
-                        Console.WriteLine();
-                        Thread.Sleep(1500);
-
-
-                        //Фаза подкидывания карт
-                     //   PhasePodkid(players, attackPlayer, defendPlayer, cardsInGame, desk, kozyr);
-                        Thread.Sleep(1000);
-
-
-                        // Проигравший забирает в руку все карты со стола 
-                        foreach (Card card in cardsInGame) defendPlayer.PlayerKoloda.Add(card); 
-                        cardsInGame.Clear(); //карты со стола очищаются
-                        break;
-                    }
-
-                    //если карта для защиты есть
-                    else
-                    {
-                        Color.Green($"{defendPlayer.Name} защищается картой {defendCard.GetNominal}, {defendCard.GetMast}.");
-                        Console.WriteLine();
-                        Thread.Sleep(2000);
-                        cardsInGame.Add(defendCard);// она добавляется в карты на столе
-                    }
-
-                    //Показ карт в игре
-                    ShowCardsInGame(cardsInGame, kozyr);
-                    Thread.Sleep(1000);
-
-                    //проверка на макс.количество сыгранных карт и наличия карт у защищающегося
-                    if (MaxCardCheck()) break;
-
-                } while (cardsInGame.Count != 12); 
-
-
-                // выбор следующего атакующего игрока
-                if (isEndHod == false)
-                {
-                    ChangeAttackPlayerInHod();
-                }
-
-
-                //проверка на завершение хода
-                if (EndHodCheck()) break;
-
-
-            } while (cardsInGame.Count != 12);
-
-
-            Color.Cyan("Передача хода!");
-            Console.WriteLine();
-            Thread.Sleep(500);
-            return whoWinHod;
-
-
-            //если карты для атаки нет
-            void NoAttackCard()
-            {
-                //номиналы карт на руке атакующего
-                var nominalPlayer = from card in attackPlayer.PlayerKoloda
-                                    let nominal = card.GetNominal
-                                    select nominal;
-
-                //номиналы карт в игре
-                var nominalGame = from card in cardsInGame
-                                  let nominal = card.GetNominal
-                                  select nominal;
-
-                //номиналы карт на руке всех атакующих
-                var nominalAllAttackPlayers = from player in players
-                                              where player != defendPlayer
-                                              let playerKoloda = player.PlayerKoloda
-                                              from card in playerKoloda
-                                              let nominal = card.GetNominal
-                                              select nominal;
-
-
-                //пересечение номиналов в руке атакующего и в игре
-                var yesNominal = nominalPlayer.Intersect(nominalGame);
-
-                //пересечение номиналов в руке всех атакующих игроков и в игре
-                var yesAllNominal = nominalAllAttackPlayers.Intersect(nominalGame);
-
-
-                // Всем атакующим игрокам нечем атаковать
-                if (yesAllNominal.Count() == 0)
-                {
-                    Console.WriteLine();
-                    isEndHod = true;
-                    whoWinHod = true;
-                    return;
-                }
-
-                //Если по факту у атакующего игрока есть номинал для атаки, но по стратегии атаки он не подкидывает карты
-                if (yesNominal.Count() != 0)
-                {
-                    if (!attackedPlayers.Contains(attackPlayer)) // Раньше данный игрок не атаковал
-                    {
-                        Color.Red($"Игроку {attackPlayer.Name} нечем атаковать. Атаковать пробуют другие игроки.");
-                        Console.WriteLine();
-                        Thread.Sleep(1500);
-                    }
-
-                    //такой игрок дважды заносится в список атаковавших игроков, чтобы сократить цикл перебора игроков
-                    attackedPlayers.Add(attackPlayer);
-                    attackedPlayers.Add(attackPlayer);
-                }
-
-                //Если у атакующего игрока реально нет карты для атаки
-                else
-                {
-                    if (!attackedPlayers.Contains(attackPlayer)) // Раньше данный игрок не атаковал
-                    {
-                        Color.Red($"Игроку {attackPlayer.Name} нечем атаковать. Атаковать пробуют другие игроки.");
-                        Console.WriteLine();
-                        Thread.Sleep(1500);
-                    }
-                    //такой игрок один раз заносится в список атаковавших игроков
-                    attackedPlayers.Add(attackPlayer);
-                }
-
-                return;
-            }
-
-            //проверка на макс.количество сыгранных карт и наличия карт у защищающегося
-            bool MaxCardCheck()
-            {
-                //если сыграно максимальное количество карт в ходу
-                if (cardsInGame.Count() == 12)
-                {
-                    Color.Cyan($"Сыграно максимальное количество карт.");
-                    Console.WriteLine();
-                    Thread.Sleep(1500);
-                    isEndHod = true;
-                    whoWinHod = true; // защищающийся выиграл ход
-                    return true;
-                }
-
-                //если у защищавшегося закончились карты
-                if (defendPlayer.PlayerKoloda.Count() == 0)
-                {
-                    Color.Cyan($"У игрока {defendPlayer.Name} закончились карты.");
-                    Console.WriteLine();
-                    Thread.Sleep(1500);
-                    isEndHod = true;
-                    whoWinHod = true;// защищающийся выиграл ход
-                    return true;
-                }
-                return false;
-            }
-
-            //вычисляет количество попыток для атаки
-            void TryToAttack()
-            {
-                //если игроков в игре 2 или 3
-                if (players.Count() < 4)
-                {
-                    if (attackedPlayers.Where(x => x == attackPlayer).Count() > 2) // то дается три попытки атаковать
-                    {
-                        whoWinHod = true;
-                        isEndHod = true;
-                    }
-
-                }
-                //если игроков в игре 4
-                else
-                {
-                    if (attackedPlayers.Where(x => x == attackPlayer).Count() > 4) // то дается 4 попытки атаковать
-                                                                                   // (так как игроков в игре больше, выше вероятность
-                                                                                   // атаковать на новом круге
-                    {
-                        whoWinHod = true;
-                        isEndHod = true;
-                    }
-                }
-            }
-
-            //меняет атакующего игрока в ходу
-            void ChangeAttackPlayerInHod()
-            {
-                //вычисляет количество попыток для атаки
-                TryToAttack();
-
-                // выбор следующего атакующего игрока
-                int currentIndexOfAttackPlayer = players.IndexOf(attackPlayer);
-                foreach (var player in players)
-                {
-                    if (player != defendPlayer)
-                    {
-                        try
-                        {
-                            //атакует следущий игрок
-                            attackPlayer = players[++currentIndexOfAttackPlayer];
-                            if (attackPlayer == defendPlayer)
-                            {
-                                //если следующий игрок - защитник, атакует следующий за защитником
-                                ++currentIndexOfAttackPlayer;
-                                attackPlayer = players[currentIndexOfAttackPlayer];
-                            }
-                        }
-                        catch (ArgumentOutOfRangeException x)
-                        {
-                            //если вылетело исключение конца списка, атакует первый игрок в списка
-                            currentIndexOfAttackPlayer = 0;
-                            attackPlayer = players[currentIndexOfAttackPlayer];
-                            if (attackPlayer == defendPlayer)
-                            {
-                                //если первый игрок - защитник, атакует следующий за защитником
-
-                                ++currentIndexOfAttackPlayer;
-                                attackPlayer = players[currentIndexOfAttackPlayer];
-                            }
-                        }
-
-                        ///Color.Red($"Смена атакующего игрока. Атакует {attackPlayer.Name}");
-                        ///attackPlayer.ShowCardsInHand(kozyr); Console.WriteLine();
-                        ///defendPlayer.ShowCardsInHand(kozyr); Console.WriteLine();
-                        ///ShowCardsInGame(cardsInGame, kozyr);
-                        break;
-                    }
-                }
-            }
-
-            //проверка на завершение хода
-            bool EndHodCheck()
-            {
-                if (isEndHod) //если ход окончен
-                {
-                    //если защита проиграла
-                    if (!whoWinHod) return true;
-
-                    //если защита выиграла
-                    else
-                    {
-                        Color.Green($"Игрок {defendPlayer.Name} успешно отзащищался!");
-                        Thread.Sleep(1000);
-                        Console.WriteLine();
-                        cardsInGame.Clear();
-                        return true;
-                    }
-
-                }
-                return false;
-
-            }
-        }
-
-           
-
         //Фаза донабора карт из колоды
-        public void PhaseDonaborKart(List<Player> players, Player attackPlayer, Player defendPlayer,
-            Koloda desk, Card kozyr)
+        public void DonaborKart()
         {
 
             Color.Cyan($"Игроки добирают карты из колоды.");
             Thread.Sleep(1500);
 
-
-            bool isCanTakeFromDesk = true;    //если из колоды можно взять карты
-            bool isDeskEmpty = false;               //пуста ли колода
-            Card newCard = null;                    //новая карта, взятая из колоды
+            
+            bool isDeskEmpty = false; //пуста ли колода
+            Card newCard;//новая карта, взятая из колоды
+            Player donaborPlayer = AttackPlayer();
             List<Player> donaboredPlayers = new List<Player>(); //список игроков, которые уже брали карты из колоды
 
             do
             {
 
-                //набор булевок. Возвращает тру, если у атакующего игрока полный набор карт
-                var fullsets = from player in players
-                               where player != defendPlayer
-                               let isSetCards = player.PlayerKoloda.Count() >= 6 ? true : false
-                               select isSetCards;
-
-
-                //Если у всех атакующих полный набор карт и количество пытавшихся брать карты равно количеству атакующих, берет защищающийся
-                if (fullsets.All(set => set == true) && donaboredPlayers.Count() == (players.Count() - 1))
+                if (donaborPlayer.PlayerKoloda.Count() < 6 && Desk.Cards.Any())
                 {
-                    attackPlayer = defendPlayer;
-                }
-
-
-
-                donaboredPlayers.Add(attackPlayer); // пытающийся брать из колоды добавляется в список
-                if (attackPlayer.PlayerKoloda.Count() < 6 && desk.Cards.Any())
-                {
-                    Color.Green($"Игрок {attackPlayer.Name} берет карты из колоды.");
+                    Color.Green($"Игрок {donaborPlayer.Name} берет карты из колоды.");
                     Thread.Sleep(1000);
                 }
-                if (attackPlayer.PlayerKoloda.Count() > 5)
+                if (donaborPlayer.PlayerKoloda.Count() > 5)
                 {
-                    Color.Green($"Игроку {attackPlayer.Name} не нужно брать карты из колоды.");
+                    Color.Green($"Игроку {donaborPlayer.Name} не нужно брать карты из колоды.");
                     Thread.Sleep(1000);
                 }
 
 
                 //игрок берет из колоды карты
-                while (attackPlayer.PlayerKoloda.Count() < 6 && !isDeskEmpty)
+                donaboredPlayers.Add(donaborPlayer); // пытающийся брать из колоды добавляется в список
+                while (donaborPlayer.PlayerKoloda.Count() < 6 && !isDeskEmpty)
                 {
                     if (!isDeskEmpty) // если колода не пуста, игрок берет карты пока в руке не окажется 6 карт
                     {
                         Desk.Cards.TryPop(out newCard);
-                        attackPlayer.PlayerKoloda.Add(newCard); //добавление карты в руку
+                        donaborPlayer.PlayerKoloda.Add(newCard); //добавление карты в руку
 
                         //если в колоде кончились карты
-                        if (desk.Cards.Count() == 0)
+                        if (Desk.Cards.Count() == 0)
                         {
                             Color.Cyan($"Игрок забирает последнюю карту из колоды - козырь {newCard.GetNominal}, {newCard.GetMast}.");
                             isDeskEmpty = true;
-                            isCanTakeFromDesk = false;
                             break;
                         }
                     }
@@ -902,7 +721,8 @@ namespace ConsoleDurak
                 //Смена игрока для донабора карт
                 ChangeDonaborPlayer ();
 
-            } while (isCanTakeFromDesk);
+            } while (true);
+
 
             //Проверка. выходы из цикла донабора, если колода пуста или брали все игроки
             bool CannotDonabor()
@@ -915,52 +735,46 @@ namespace ConsoleDurak
                     return true;
                 }
 
-
-                //последним берет защищающийся, как только взял - выход из фазы донабора карт
-                if (attackPlayer == defendPlayer)
+                //Если количество пытавшихся брать карты равно количеству игроков
+                if (donaboredPlayers.Count() == Players.Count())
                 {
-                    isCanTakeFromDesk = false;
                     return true;
                 }
 
                 return false;
             }
 
+
             //Смена игрока для донабора карт
             void ChangeDonaborPlayer()
             {
-                int currentIndexOfAttackPlayer = players.IndexOf(attackPlayer);
-                foreach (var player in players)
-                {
-                    //перебор из всех оставшихся игроков, кроме защищавшегося и тех, что уже брали
-                    if (player != defendPlayer && !donaboredPlayers.Contains(player))
-                    {
-                        try
-                        {
-                            attackPlayer = players[++currentIndexOfAttackPlayer];
-                            if (attackPlayer == defendPlayer)
-                            {
-                                ++currentIndexOfAttackPlayer;
-                                attackPlayer = players[currentIndexOfAttackPlayer];
-                            }
-                        }
-                        catch (ArgumentOutOfRangeException x)
-                        {
-                            currentIndexOfAttackPlayer = 0;
-                            attackPlayer = players[currentIndexOfAttackPlayer];
-                            if (attackPlayer == defendPlayer)
-                            {
-                                ++currentIndexOfAttackPlayer;
-                                attackPlayer = players[currentIndexOfAttackPlayer];
-                            }
-                        }
 
-                        /// Color.Red($"Смена берущего из колоды игрока. Берет {attackPlayer.Name}.");
+                foreach (Player player in Players)
+                {
+                    if (player.PlayerStatus == Player.status.ВышелИзИгры) donaboredPlayers.Add(player);
+                }
+
+                //Если количество пытавшихся брать карты равно количеству атакующих, берет защищающийся
+                if (donaboredPlayers.Count() == (Players.Count() - 1))
+                {
+                    donaborPlayer = DefendPlayer();
+                    return;
+                }
+
+                var wantDonaborPlayers = Players.Except(donaboredPlayers);
+                foreach (var player in wantDonaborPlayers)
+                {
+                    if (player.PlayerStatus != Player.status.Защищающийся)
+                    {
+                        donaborPlayer = player;
                         break;
                     }
                 }
             }
         }
+
+
+
 
         /*
 
@@ -1081,8 +895,13 @@ namespace ConsoleDurak
         }
         */
 
+
+
+
+
+
         //показать карты в игре
-        public void ShowCardsInGame(List<Card> cardsInGame, Card kozyr)
+        private void ShowCardsInGame(List<Card> cardsInGame, Card kozyr)
         {
             Color.Cyan($"Карты в игре:");
 

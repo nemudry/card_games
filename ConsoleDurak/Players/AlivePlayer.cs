@@ -11,7 +11,7 @@ namespace ConsoleDurak
         internal AlivePlayer(string name)
         {
             Name = name;
-            PlayerStatus = Status.Neitral;
+            PlayerStatus = status.Нейтральный;
             PlayerKoloda = new List<Card>();
         }
 
@@ -63,37 +63,39 @@ namespace ConsoleDurak
                 //ввод номера карты для атаки
                 do
                 {
-                    //показать руку
-                    HandInfo(kozyr);
-                    Console.WriteLine($"-1. Не атаковать.");
-                    Console.WriteLine();
-
-                    //ответ игрока
-                    answerAttack = Table.PlayerAnswer();
-
-                    // -1. Не атаковать
-                    if (answerAttack == -1)
+                    do
                     {
-                        return attack;
-                    }
+                        //показать руку
+                        HandInfo(kozyr);
+                        Console.WriteLine($"-1. Не атаковать.");
+                        Console.WriteLine();
 
-                    if (Table.CheckСonditions(answerAttack, PlayerKoloda.Count, 1)) break;
+                        //ответ игрока
+                        answerAttack = Table.PlayerAnswer();
 
-                    // соответствие выбранного номинала картам в игре
-                    else
-                    {
-                        // да, если в картах в игре есть номинал выбранной карты
-                        isHaveNominal = nominals.Contains(PlayerKoloda[answerAttack - 1].GetNominal);
-
-                        if (!isHaveNominal)
+                        // -1. Не атаковать
+                        if (answerAttack == -1)
                         {
-                            Color.Red("Введенное значение неверно. Данную карту нельзя ввести в игру.");
-                            Console.WriteLine();
-                            Thread.Sleep(1000);
+                            return attack;
                         }
 
-                        else break;
+                        if (Table.CheckСonditions(answerAttack, PlayerKoloda.Count, 1, -1)) break;
+
+                    } while (true);
+
+                    // соответствие выбранного номинала картам в игре
+                    // да, если в картах в игре есть номинал выбранной карты
+                    isHaveNominal = nominals.Contains(PlayerKoloda[answerAttack - 1].GetNominal);
+
+                    if (!isHaveNominal)
+                    {
+                        Color.Red("Введенное значение неверно. Данную карту нельзя ввести в игру.");
+                        Console.WriteLine();
+                        Thread.Sleep(1000);
                     }
+
+                    else break;
+                    
 
                 } while (true);
 
@@ -132,7 +134,7 @@ namespace ConsoleDurak
                     }
 
                     // ввод неверного числа 
-                    if (Table.CheckСonditions(answerDefend, PlayerKoloda.Count, 1)) break;
+                    if (Table.CheckСonditions(answerDefend, PlayerKoloda.Count, 1, -1)) break;
 
                 } while (true);
 
