@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ConsoleDurak
+﻿namespace ConsoleDurak
 {
     internal class AlivePlayer : Player
     {
@@ -15,17 +9,11 @@ namespace ConsoleDurak
             PlayerKoloda = new List<Card>();
         }
 
-
-
-
         internal override Card Attack(Card kozyr, List<Card> cardsInGame)
         {
-
-
-            Card attack = null;//карта для атаки
+            Card attackCard = null;//карта для атаки
             int answerAttack; // номер карты для атаки
             PlayerKoloda.Sort(Card.SortByNominal); // сортировка карт по номиналу
-
 
             // если в игре нет карт - первая атака
             if (cardsInGame.Count == 0)
@@ -47,15 +35,11 @@ namespace ConsoleDurak
                 return GetCard(answerAttack);
             }
 
-
             //если в игре уже есть карты - обычная атака
             else
             {
                 // номиналы карт в игре
-                var nominals = from card in cardsInGame
-                               let nominal = card.GetNominal
-                               select nominal;
-
+                var nominals = cardsInGame.Select(e => e.GetNominal);
 
                 // подходит ли номинал выбранной карты для атаки
                 bool isHaveNominal = false;
@@ -76,7 +60,7 @@ namespace ConsoleDurak
                         // -1. Не атаковать
                         if (answerAttack == -1)
                         {
-                            return attack;
+                            return attackCard;
                         }
 
                         if (Table.CheckСonditions(answerAttack, PlayerKoloda.Count, 1, -1)) break;
@@ -96,7 +80,6 @@ namespace ConsoleDurak
 
                     else break;
                     
-
                 } while (true);
 
             }
@@ -104,8 +87,6 @@ namespace ConsoleDurak
             //получение карты и ее удаление из руки
             return GetCard(answerAttack);
         }
-
-
 
         internal override Card Defend(Card kozyr, List<Card> cardsInGame)
         {
@@ -221,9 +202,6 @@ namespace ConsoleDurak
             }
         }
 
-
-
-
         //показать карты в руке игрока
         private void HandInfo(Card kozyr)
         {
@@ -240,9 +218,6 @@ namespace ConsoleDurak
 
         }
 
-
-
-
         //получение карты и ее удаление из руки
         private Card GetCard (int c)
         {
@@ -251,6 +226,5 @@ namespace ConsoleDurak
             PlayerKoloda.Remove(card);
             return card;
         }
-
     }
 }

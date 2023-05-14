@@ -1,20 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Numerics;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using static ConsoleDurak.Card;
-using static ConsoleDurak.Koloda;
-
-namespace ConsoleDurak
+﻿namespace ConsoleDurak
 {
     internal class Durak : Game
     {
-
         internal override string Name { get; }
         private int BotLevel { get; }
         private Koloda Desk { get; }
@@ -30,18 +17,13 @@ namespace ConsoleDurak
             КонецИгры,
         }
 
-
-
         internal Durak()
         {
             Name = "Дурак подкидной";
         }
 
-
-
         internal Durak(string playerName, int amountOfPlayers, int botLevel)
         {
-
             Name = "Дурак подкидной";
             BotLevel = botLevel;
             DurakStatus = statusGame.НачалоХода;
@@ -69,22 +51,13 @@ namespace ConsoleDurak
                     break;
                 default: break;
             };
-
-
-
         }
-
-
-
-
         public void RunGame()
         {
             try
             {
                 //Очередность игроков в игре
                 PlayersInfo();
-
-
                 //Перемешать колоду
                 Random random = new Random();
                 var kolodaforShuffle = Desk.Cards.ToList<Card>();
@@ -104,12 +77,10 @@ namespace ConsoleDurak
                     }
                 }
 
-
                 //козырь в игре
                 Kozyr = Desk.Cards.ToArray<Card>().Last();
                 Color.Cyan($"Козырь в игре - {Kozyr.GetNominal}, {Kozyr.GetMast}");
                 Thread.Sleep(1000);
-
 
                 //кто первый ходит
                 WhoFirstHod(Players, Kozyr, out Card firstHod, out Player firstHodPlayer);
@@ -119,7 +90,6 @@ namespace ConsoleDurak
                 Console.WriteLine();
                 Thread.Sleep(2500);
                 Console.Clear();                
-
 
                 //определение защищающегося игрока
                 NextPlayer(firstHodPlayer).PlayerStatus = Player.status.Защищающийся;
@@ -132,16 +102,13 @@ namespace ConsoleDurak
             {
                 Console.WriteLine($"Ошибка {x.Message}");
             }
-
-
-
         }
 
-
-
+        //Очень громоздкий метод
+        //Не понятно зачем разделил на Run и Start
+        //Такие действия как: перемешать колоду, определить козырь и кто первый ходит выносим отдельными функциями(пригодятся в переводном например)
         private void StartGame()
         {
-
             do
             {
                 Color.Cyan($"Начало хода.");
@@ -165,14 +132,10 @@ namespace ConsoleDurak
                 Console.WriteLine();
                 Thread.Sleep(1000);
 
-
-
                 //Фаза игрового хода. Игроки атакуют, защищающийся защищается
                 bool whoWinGameHod = GameHod();
                 Thread.Sleep(1500);
                 Console.Clear();
-
-
 
                 //Донабор карт. если в колоде есть карты
                 if (Desk.Cards.Any())
@@ -183,17 +146,12 @@ namespace ConsoleDurak
                     Thread.Sleep(1500);
                 }
 
-
                 //смена защищающегося и атакующего игрока     
                 ChangeAttackPlayerInGame();
-
-
 
                 //Выход игрока из игры
                 ExitPlayer();
                 
-
-
                 //Инфо об игре. Очередность игроков в игре и количество карт в игре и на руках              
                 PlayersInfo();
                 if (Desk.Cards.Any())
@@ -205,22 +163,15 @@ namespace ConsoleDurak
                 Thread.Sleep(2500);
                 Console.Clear();
 
-
                 //Проверка. Конец игры
                 if (EndofGame()) break;
-
 
                 // выход из игры                          
                 if (DurakStatus == statusGame.КонецИгры) break;
 
-
-
-
-
                 //смена защищающегося и атакующего игрока   
                 void ChangeAttackPlayerInGame()
                 {
-
                     //если ранее игрок успешно отзащищался
                     if (whoWinGameHod)
                     {
@@ -231,7 +182,6 @@ namespace ConsoleDurak
                         Player next = NextPlayer(defend);
                         next.PlayerStatus = Player.status.Защищающийся;
                     }
-
 
                     //если игрок не защитился
                     else
@@ -296,13 +246,10 @@ namespace ConsoleDurak
                     }
                 }
 
-
                 //Проверка. Конец игры
                 bool EndofGame()
                 {
-                    var LastPlayer = (from player in Players
-                                     where player.PlayerStatus != Player.status.ВышелИзИгры
-                                     select player).ToList();
+                    var LastPlayer = Players.Where(e => e.PlayerStatus != Player.status.ВышелИзИгры);
 
                     if (LastPlayer.Count() == 1)
                     {
@@ -318,17 +265,11 @@ namespace ConsoleDurak
                 }
 
             } while (true);
-
-
         }
-
-
-
 
         // кто первый ходит
         private void WhoFirstHod(List<Player> players, Card kozyr, out Card firstHod, out Player firstHodPlayer)
         {
-
             //наименьший козырь в игре, и игрок у которого этот козырь
             firstHod = null;
             firstHodPlayer = null;
@@ -357,7 +298,6 @@ namespace ConsoleDurak
                 }
             }
 
-
             // если козырей нет ни у кого на руках - выбирается самый старший некозырь
             if (firstHod == null)
             {
@@ -372,7 +312,6 @@ namespace ConsoleDurak
                             firstHod = card;
                             firstHodPlayer = player;
                         }
-
                         //карта с наибольшим номиналом
                         if (card.GetNominal > firstHod.GetNominal)
                         {
@@ -391,12 +330,9 @@ namespace ConsoleDurak
             }
         }
 
-
-
         //Фаза игрового хода. Игроки атакуют, один игрок защищается
         private bool GameHod()
         {
-
             Player attackingPlayer = AttackPlayer();
             Player defendingPlayer = DefendPlayer();
             List<Player> AlreadyAttackedPlayer = new List<Player>();
@@ -435,9 +371,6 @@ namespace ConsoleDurak
                     ShowCardsInGame(CardsInGame, Kozyr);
                     Console.WriteLine();
                     Thread.Sleep(2000);
-
-
-
 
                     // получение карты для защиты 
                     defendCard = defendingPlayer.Defend(Kozyr, CardsInGame);

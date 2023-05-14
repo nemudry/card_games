@@ -69,8 +69,6 @@ namespace ConsoleDurak
         //Ввод имени и количества игроков
         private void InputGameParameters(out string answerName, out int answerPlayerCount, out int answerDifficultyBot)
         {
-
-
             do
             {
                 Color.Cyan("Введите ваше имя:");

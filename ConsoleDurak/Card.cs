@@ -1,11 +1,4 @@
-﻿using ConsoleDurak;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ConsoleDurak
+﻿namespace ConsoleDurak
 {
     internal class Card
     {
@@ -17,8 +10,6 @@ namespace ConsoleDurak
             GetMast = mast;
             GetNominal = nominal;
         }
-
-
 
         //доступные номиналы карт в игре
         internal enum Nominal
@@ -47,21 +38,19 @@ namespace ConsoleDurak
             крести
         }
 
-
         //cтатическое свойство для cортировки карт по номиналу в руке живого игрока
         internal static IComparer<Card> SortByNominal
         {
             get { return new CardComparer(); }
         }
     }
-}
 
-
-//сортировщик для cортировки карт по номиналу в руке живого игрока
-internal class CardComparer : IComparer<Card>
-{
-    int IComparer<Card>.Compare(Card one, Card two)
+    //сортировщик для cортировки карт по номиналу в руке живого игрока
+    internal class CardComparer : IComparer<Card>
     {
-        return one.GetNominal.CompareTo(two.GetNominal);
+        int IComparer<Card>.Compare(Card one, Card two)
+        {
+            return one.GetNominal.CompareTo(two.GetNominal);
+        }
     }
 }

@@ -1,6 +1,5 @@
 ﻿namespace ConsoleDurak
 {
-
     internal class VirtualPlayer : Player
     {
         internal VirtualPlayer(string name)
@@ -10,13 +9,10 @@
             PlayerKoloda = new List<Card>();
         }
 
-
-
         internal override Card Attack(Card kozyr, List<Card> cardsInGame)
         {
             //карта для атаки
             Card attack = null;
-
 
             // если в игре нет карт - первая атака
             if (cardsInGame.Count == 0)
@@ -30,7 +26,6 @@
                         //выбирается наименьший козырь
                         attack = CardMin(attack, card);
                     }
-
                     else
                     {
                         //выбор некозыря
@@ -46,15 +41,11 @@
                 PlayerKoloda.Remove(attack);
                 return attack;
             }
-
-
             // если в игре есть карты - обычная атака
             else
             {
                 // номиналы карт в игре
-                var nominals = from card in cardsInGame
-                               let nominal = card.GetNominal
-                               select nominal;
+                var nominals = cardsInGame.Select(e => e.GetNominal);
 
 
                 // выбор наименьшего некозыря для атаки
@@ -71,8 +62,6 @@
                     }
                 }
             }
-
-
             PlayerKoloda.Remove(attack);
             return attack;
         }
@@ -83,11 +72,9 @@
             //карта для защиты
             Card defend = null;
 
-
             //если атакуют не козырем
             if (cardsInGame.Last().GetMast != kozyr.GetMast)
             {
-
                 // выбор наименьшего некозыря для защиты
                 foreach (var card in PlayerKoloda)
                 {
@@ -115,8 +102,6 @@
                     }
                 }
             }
-
-
             //если атака козырем
             else
             {
@@ -139,9 +124,6 @@
             PlayerKoloda.Remove(defend);
             return defend;
         }
-
-
-
 
         //выбирается наименьшая карта по номиналу 
         private Card CardMin(Card card, Card x)
