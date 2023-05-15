@@ -3,10 +3,10 @@
     internal class Durak : Game
     {
         internal override string Name { get; }
-        private Koloda Desk { get; }
-        private List<Card> CardsInGame { get; }
+        protected Koloda Desk { get; }
+        protected List<Card> CardsInGame { get; }
 
-        private Card Kozyr { get; set; }
+        protected Card Kozyr { get; set; }
         protected override List<Player> Players { get; }
         internal statusGame DurakStatus { get; set; }
         internal enum statusGame
@@ -73,7 +73,7 @@
             }
         }
 
-        public void StartGame()
+        public virtual void StartGame()
         {
             try
             {
@@ -166,7 +166,7 @@
         }
 
         //Фаза игрового хода. Игроки атакуют, один игрок защищается
-        private bool GameHod()
+        protected virtual bool GameHod()
         {
             Player attackingPlayer = AttackPlayer();
             Player defendingPlayer = DefendPlayer();
@@ -352,7 +352,7 @@
         }
 
         //Фаза донабора карт из колоды
-        private void DonaborKart()
+        protected void DonaborKart()
         {
             Color.Cyan($"Игроки добирают карты из колоды.");
             Thread.Sleep(1500);
@@ -448,7 +448,7 @@
         }
 
         //Фаза подкидывания карт
-        internal void Podkid(Player podkidPlayer)
+        protected void Podkid(Player podkidPlayer)
         {
             Card podkidCard = null; //карта для подкида
 
@@ -491,7 +491,7 @@
         }
 
         //смена защищающегося и атакующего игрока   
-        private void ChangeAttackPlayerInGame(bool whoWinGameHod)
+        protected void ChangeAttackPlayerInGame(bool whoWinGameHod)
         {
             //если ранее игрок успешно отзащищался
             if (whoWinGameHod)
@@ -519,7 +519,7 @@
         }
 
         // кто первый ходит
-        private void WhoFirstHod(List<Player> players, Card kozyr, out Card firstHod, out Player firstHodPlayer)
+        protected void WhoFirstHod(List<Player> players, Card kozyr, out Card firstHod, out Player firstHodPlayer)
         {
             //наименьший козырь в игре, и игрок у которого этот козырь
             firstHod = null;
@@ -587,7 +587,7 @@
         }
 
         //Выход игрока из игры
-        private void ExitPlayer()
+        protected void ExitPlayer()
         {
             foreach (Player player in Players)
             {
@@ -633,7 +633,7 @@
         }
 
         //Проверка. Конец игры
-        private bool EndofGame()
+        protected bool EndofGame()
         {
             var LastPlayer = Players.Where(e => e.PlayerStatus != Player.status.ВышелИзИгры);
 
@@ -651,7 +651,7 @@
         }
 
         //Очередность игроков в игре
-        private void PlayersInfo()
+        protected void PlayersInfo()
         {
             Color.Cyan("Очередность игроков в игре:");
             int playerNumber = 0;
@@ -667,7 +667,7 @@
         }
 
         //показать карты в игре
-        private void ShowCardsInGame(List<Card> cardsInGame, Card kozyr)
+        protected void ShowCardsInGame(List<Card> cardsInGame, Card kozyr)
         {
             Color.Cyan($"Карты в игре:");
 
@@ -702,7 +702,7 @@
         }
 
         //установить козырь
-        private void SetKosyr()
+        protected void SetKosyr()
         {
             Kozyr = Desk.Cards.ToArray<Card>().Last();
             Color.Cyan($"Козырь в игре - {Kozyr.GetNominal}, {Kozyr.GetMast}");
@@ -710,7 +710,7 @@
         }
 
         //перемешать колоду
-        private void ShuffleDeck ()
+        protected void ShuffleDeck ()
         {
             Random random = new Random();
             var kolodaforShuffle = Desk.Cards.ToList<Card>();
@@ -723,7 +723,7 @@
         }
 
         //раздача карт
-        private void PassOutCards()
+        protected void PassOutCards()
         {            
             foreach (Player player in Players)
             {
@@ -735,7 +735,7 @@
         }
 
         //следующий игрок по списку игроков
-        private Player NextPlayer(Player player)
+        protected Player NextPlayer(Player player)
         {
             int currentIndexOfPlayer = Players.IndexOf(player);//индекс игрока
             Player nextPlayer;
@@ -798,7 +798,7 @@
         }
 
         //текущий атакующий игрок
-        private Player AttackPlayer()
+        protected Player AttackPlayer()
         {
             foreach (Player player in Players)
             {
@@ -811,7 +811,7 @@
         }
 
         //текущий защищающийся игрок
-        private Player DefendPlayer()
+        protected Player DefendPlayer()
         {
             foreach (Player player in Players)
             {

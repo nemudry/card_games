@@ -9,7 +9,8 @@ namespace ConsoleDurak
         {
             games = new List<Game>
             {
-                new Durak ()
+                new Durak (),
+                new DurakPerevod()
             };
         }
 
@@ -42,10 +43,16 @@ namespace ConsoleDurak
             switch (answerGame)
             {
                 case 1:
-                    Color.Cyan("Добро пожаловать в карточную игру \"Дурак\".");
+                    Color.Cyan("Добро пожаловать в карточную игру \"Дурак подкидной\".");
                     Console.WriteLine();
                     Durak durak = new Durak(playerName, amountOfPlayers, botLevel);
                     durak.StartGame();
+                    break;
+                case 2:
+                    Color.Cyan("Добро пожаловать в карточную игру \"Дурак переводной\".");
+                    Console.WriteLine();
+                    DurakPerevod durakPerevod = new DurakPerevod(playerName, amountOfPlayers, botLevel);
+                    durakPerevod.StartGame();
                     break;
                 default: break;
             }        

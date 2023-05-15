@@ -122,6 +122,45 @@
         {
             return Attack(kozyr, cardsInGame, Players);
         }
+
+        internal override Card Perevod(Card kozyr, List<Card> cardsInGame, List<Player> Players)
+        {
+            //карта для защиты
+            Card perevodCard = null;
+
+            // выбор наименьшего некозыря для перевода
+            foreach (var card in PlayerKoloda)
+            {
+                if (card.GetMast != kozyr.GetMast)
+                {
+                    if (card.GetNominal == cardsInGame.Last().GetNominal)
+                    {
+                        perevodCard = card;
+                    }
+                }
+            }
+
+            //если после этого карты для перевода нет
+            if (perevodCard == null)
+            {
+                // выбор наименьшего козыря для перевода
+                foreach (var card in PlayerKoloda)
+                {
+                    if (card.GetMast == kozyr.GetMast)
+                    {
+                        //выбирается меньший козырь по номиналу
+                        if (card.GetNominal == cardsInGame.Last().GetNominal)
+                        {
+                            perevodCard = card;
+                        }
+                    }
+                }
+            }
+
+            //удаление карты из руки        
+            PlayerKoloda.Remove(perevodCard);
+            return perevodCard;
+        }
     }
 }
 
