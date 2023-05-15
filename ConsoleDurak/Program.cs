@@ -1,4 +1,4 @@
-﻿
+﻿//Дурак
 namespace ConsoleDurak
 {
     static class Program
