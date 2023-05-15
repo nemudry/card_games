@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace ConsoleDurak
 {
     public class Table
@@ -17,8 +12,6 @@ namespace ConsoleDurak
                 new Durak ()
             };
         }
-
-
 
         public void Start()
         {
@@ -40,14 +33,11 @@ namespace ConsoleDurak
                 //проверка условий
                 if (Table.CheckСonditions(answerGame, games.Count(), 1)) break;
 
-
             } while (true);
             Console.WriteLine();
 
-
             //Ввод имени игрока, количества игроков, сложности бота
             InputGameParameters(out string playerName, out int amountOfPlayers, out int botLevel);
-
 
             switch (answerGame)
             {
@@ -55,16 +45,11 @@ namespace ConsoleDurak
                     Color.Cyan("Добро пожаловать в карточную игру \"Дурак\".");
                     Console.WriteLine();
                     Durak durak = new Durak(playerName, amountOfPlayers, botLevel);
-                    durak.RunGame();
+                    durak.StartGame();
                     break;
                 default: break;
             }        
         }
-
-
-
-
-
 
         //Ввод имени и количества игроков
         private void InputGameParameters(out string answerName, out int answerPlayerCount, out int answerDifficultyBot)
@@ -80,7 +65,6 @@ namespace ConsoleDurak
             } while (true);
             Console.WriteLine();
 
-
             do
             {
                 Color.Cyan("Допустимое количество игроков: 2-4.");
@@ -91,16 +75,12 @@ namespace ConsoleDurak
                 //проверка условий
                 if (Table.CheckСonditions(answerPlayerCount, 4, 2)) break;
 
-
             } while (true);
             Console.WriteLine();
-
-
 
             do
             {
                 Color.Cyan("Введите уровень сложности: 1-2.");
-                Color.Red("В данный момент реализован только [1] уровень сложности.");
 
                 answerDifficultyBot = PlayerAnswer();
 
@@ -110,7 +90,6 @@ namespace ConsoleDurak
             } while (true);
             Console.Clear();
         }
-
 
 
         //Получение ответа игрока, используется внутри сборки
@@ -125,7 +104,6 @@ namespace ConsoleDurak
         //проверка условий на ввод данных игроком
         internal static bool CheckСonditions(int answerInput, int MaxRange, int MinRange, params int[] exeptions)
         {
-
             if (!exeptions.Contains(answerInput))
             {
                 if (!(answerInput >= MinRange && answerInput <= MaxRange))

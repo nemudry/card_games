@@ -9,5 +9,4 @@ namespace ConsoleDurak
             table.Start();
         }
     }
-
 }

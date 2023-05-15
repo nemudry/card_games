@@ -1,19 +1,9 @@
-﻿using ConsoleDurak;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static ConsoleDurak.Card;
-
-namespace ConsoleDurak
+﻿namespace ConsoleDurak
 {
-
     internal class Koloda
     {
         //колода в игре
         internal Stack<Card> Cards { get; }
-
 
         // создание новой колоды на 36 карт
         internal Koloda(int amountOfCards)
@@ -43,11 +33,8 @@ namespace ConsoleDurak
                     }
                 }
             }
-
         }
-
     }
-
 }
 
 

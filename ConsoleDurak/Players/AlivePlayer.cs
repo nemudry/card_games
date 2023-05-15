@@ -9,7 +9,7 @@
             PlayerKoloda = new List<Card>();
         }
 
-        internal override Card Attack(Card kozyr, List<Card> cardsInGame)
+        internal override Card Attack(Card kozyr, List<Card> cardsInGame, List<Player> Players)
         {
             Card attackCard = null;//карта для атаки
             int answerAttack; // номер карты для атаки
@@ -77,11 +77,9 @@
                         Console.WriteLine();
                         Thread.Sleep(1000);
                     }
-
                     else break;
                     
                 } while (true);
-
             }
 
             //получение карты и ее удаление из руки
@@ -91,7 +89,7 @@
         internal override Card Defend(Card kozyr, List<Card> cardsInGame)
         {
             //карта для атаки
-            Card defend = null;
+            Card defendCard = null;
             int answerDefend = 0;
             PlayerKoloda.Sort(Card.SortByNominal); // сортировка карт по номиналу
 
@@ -104,14 +102,13 @@
                     Console.WriteLine($"[-1]. Не защищаться.");
                     Console.WriteLine();
 
-
                     //ответ игрока
                     answerDefend = Table.PlayerAnswer();
 
                     // Не защищаться
                     if (answerDefend == -1)
                     {
-                        return defend;
+                        return defendCard;
                     }
 
                     // ввод неверного числа 
@@ -122,12 +119,10 @@
                 //условия защиты согласно правилам игры  
                 if (DefendCheck()) break;
 
-
             } while (true);
 
             //получение карты и ее удаление из руки
             return GetCard(answerDefend); 
-
 
             //условия защиты согласно правилам игры
             bool DefendCheck()
@@ -158,9 +153,6 @@
                         return NoCheckDefend(); ;
                     }
                 }
-
-
-
                 // если атакуют не козырем
                 else
                 {
@@ -189,7 +181,6 @@
                     if (PlayerKoloda[answerDefend - 1].GetMast == kozyr.GetMast) return true;
                 }
 
-
                 return true;
             }
 
@@ -201,6 +192,12 @@
                 return false;
             }
         }
+
+        internal override Card Podkid(Card kozyr, List<Card> cardsInGame, List<Player> Players)
+        {
+           return Attack(kozyr, cardsInGame, Players);
+        }
+
 
         //показать карты в руке игрока
         private void HandInfo(Card kozyr)
@@ -215,7 +212,6 @@
                 if (kozyr.GetMast == card.GetMast) Color.Green(" Козырь.");
                 else Console.WriteLine();
             }
-
         }
 
         //получение карты и ее удаление из руки
