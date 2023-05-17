@@ -1,8 +1,27 @@
-﻿namespace ConsoleDurak
+﻿using System.Linq;
+
+namespace ConsoleDurak
 {
     internal class DurakPerevod : Durak
     {
         internal override string Name { get; }
+
+        internal statusPerevod PerevodGame { get; set; }
+        internal countPerevod CountPerevod { get; set; }
+        internal enum countPerevod
+        {
+            БезПеревода,
+            Переведено1Раз,
+            Переведено2Раз,
+            Переведено3Раз,
+        }
+        internal enum statusPerevod
+        {
+            МожноПеревести,
+            БитьПеревод,
+            НельзяПеревести,
+        }
+
         internal DurakPerevod()
         {
             Name = "Дурак переводной";
@@ -12,6 +31,8 @@
             :base(playerName, amountOfPlayers, botLevel)
         {
             Name = "Дурак переводной";
+            PerevodGame = statusPerevod.МожноПеревести;
+            CountPerevod = countPerevod.БезПеревода;
         }
 
 
@@ -108,46 +129,93 @@
         }
 
         //Фаза игрового хода. Игроки атакуют, один игрок защищается
-        protected virtual bool GameHod()
+        protected override bool GameHod()
         {
             Player attackingPlayer = AttackPlayer();
             Player defendingPlayer = DefendPlayer();
             List<Player> AlreadyAttackedPlayer = new List<Player>();
             Card attackCard; //карта для атаки
             Card defendCard; // карта для защиты
+            Card perevodCard;// карта для перевода
             bool whoWinHod = true; // если успешно отзащищался - тру, неуспешно - фолс                                                               
 
             do
             {
                 do
                 {
-                    // получение карты для атаки 
-                    attackCard = attackingPlayer.Attack(Kozyr, CardsInGame, Players);
-
-                    //если карты для атаки нет
-                    if (attackCard == null)
+                    if (CountPerevod == countPerevod.БезПеревода && PerevodGame != statusPerevod.БитьПеревод)
                     {
-                        Color.Red($"Игроку {attackingPlayer.Name} нечем атаковать. Атаковать пробуют другие игроки.");
-                        AlreadyAttackedPlayer.Add(attackingPlayer);
-                        Console.WriteLine();
-                        Thread.Sleep(1500);
-                        break;
-                    }
+                        // получение карты для атаки 
+                        attackCard = attackingPlayer.Attack(Kozyr, CardsInGame, Players);
 
-                    //если карта для атаки есть 
-                    else
-                    {
-                        CardsInGame.Add(attackCard); // она добавляется в карты на столе
-                        AlreadyAttackedPlayer.Clear();
-                        Color.Green($"{attackingPlayer.Name} атакует с карты {attackCard.GetNominal}, {attackCard.GetMast}.");
-                        Console.WriteLine();
-                        Thread.Sleep(1000);
-                    }
+                        //если карты для атаки нет
+                        if (attackCard == null)
+                        {
+                            Color.Red($"Игроку {attackingPlayer.Name} нечем атаковать. Атаковать пробуют другие игроки.");
+                            AlreadyAttackedPlayer.Add(attackingPlayer);
+                            Console.WriteLine();
+                            Thread.Sleep(1500);
+                            break;
+                        }
 
+                        //если карта для атаки есть 
+                        else
+                        {
+                            CardsInGame.Add(attackCard); // она добавляется в карты на столе
+                            AlreadyAttackedPlayer.Clear();
+                            Color.Green($"{attackingPlayer.Name} атакует с карты {attackCard.GetNominal}, {attackCard.GetMast}.");
+                            Console.WriteLine();
+                            Thread.Sleep(1000);
+                        }
+                    }
                     //Показ карт в игре
-                    ShowCardsInGame(CardsInGame, Kozyr);
+                    ShowCardsInGameWithPerevod();
                     Console.WriteLine();
                     Thread.Sleep(2000);
+
+
+                    //Перевод карт
+                    if (PerevodGame == statusPerevod.МожноПеревести && CardsInGame.Count() < NextPlayer(defendingPlayer).PlayerKoloda.Count() +1 )
+                    {
+                        if (defendingPlayer.PlayerKoloda.Select(e => e.GetNominal).Contains(CardsInGame.Last().GetNominal))
+                        {
+                            int answerPerevod = 1;
+                            if (defendingPlayer is AlivePlayer)
+                            {
+                                do
+                                {
+                                    Color.Green($"Есть карта для перевода. Перевести? \n[1] Да. \n[2] Нет.");
+
+                                    //ответ игрока
+                                    answerPerevod = Table.PlayerAnswer();
+
+                                    //проверка условий
+                                    if (Table.CheckСonditions(answerPerevod, 2, 1)) break;
+
+                                } while (true);
+                            }
+
+                            if (answerPerevod == 1)
+                            {
+                                // получение карты для перевода 
+                                perevodCard = defendingPlayer.Perevod(Kozyr, CardsInGame, Players);
+                                if (perevodCard != null)
+                                {                                    
+                                    Color.Green($"{defendingPlayer.Name} переводит картой {perevodCard.GetNominal}, {perevodCard.GetMast}.");
+                                    Console.WriteLine();
+                                    Thread.Sleep(2000);
+
+                                    CountPerevod = ++CountPerevod;
+                                    PerevodChangePlayer();
+                                    defendingPlayer = DefendPlayer();
+                                    attackingPlayer = AttackPlayer();
+
+                                    CardsInGame.Add(perevodCard);
+                                    break;
+                                }
+                            }
+                        }
+                    }
 
                     // получение карты для защиты 
                     defendCard = defendingPlayer.Defend(Kozyr, CardsInGame);
@@ -157,6 +225,7 @@
                     {
                         DurakStatus = statusGame.КонецХода;
                         whoWinHod = false; // защищающийся проиграл ход
+
                         Color.Red($"Игроку {defendingPlayer.Name} нечем защищаться. Он забирает карты со стола, остальные игроки по желанию додают карты.");
                         Console.WriteLine();
                         Thread.Sleep(1500);
@@ -168,7 +237,28 @@
                         Console.WriteLine();
                         Thread.Sleep(2000);
                         CardsInGame.Add(defendCard);
+
+                        //Перенос переведенной карты на последнее место, чтобы ее можно было побить
+                        if (CountPerevod != countPerevod.БезПеревода)
+                        {
+                            Card cardToReplace;
+                            cardToReplace = CardsInGame[0];
+                            CardsInGame.Remove(cardToReplace);
+                            CardsInGame.Add(cardToReplace);
+                        }
+
+                        if (CountPerevod != countPerevod.БезПеревода) CountPerevod = --CountPerevod;
+                        if (CountPerevod != countPerevod.БезПеревода) PerevodGame = statusPerevod.БитьПеревод;
+                        else
+                        {
+                            if (CardsInGame.Count() % 2 != 0) PerevodGame = statusPerevod.БитьПеревод;
+                            else PerevodGame = statusPerevod.НельзяПеревести;
+                        }
                     }
+
+                    //Показ карт в игре
+                    ShowCardsInGameWithPerevod();
+                    Console.WriteLine();
 
                     //подкидывание карт
                     if (whoWinHod == false)
@@ -189,9 +279,6 @@
                         break;
                     }
 
-                    //Показ карт в игре
-                    ShowCardsInGame(CardsInGame, Kozyr);
-
                     //проверка на макс.количество сыгранных карт и наличия карт у защищающегося
                     if (MaxCardCheck()) break;
 
@@ -199,7 +286,7 @@
 
 
                 // выбор следующего атакующего игрока
-                if (DurakStatus != statusGame.КонецХода)
+                if (DurakStatus != statusGame.КонецХода && PerevodGame == statusPerevod.НельзяПеревести)
                 {
                     ChangeAttackPlayerInHod();
                 }
@@ -277,6 +364,9 @@
             {
                 if (DurakStatus == statusGame.КонецХода) //если ход окончен
                 {
+                    PerevodGame = statusPerevod.МожноПеревести;
+                    CountPerevod = countPerevod.БезПеревода;
+
                     //если защита проиграла
                     if (!whoWinHod) return true;
                     //если защита выиграла
@@ -292,5 +382,137 @@
                 return false;
             }
         }
+
+        protected void PerevodChangePlayer()
+        {
+            Player attack = AttackPlayer();
+            attack.PlayerStatus = Player.status.Нейтральный;
+            Player defend = DefendPlayer();
+            defend.PlayerStatus = Player.status.Атакующий;
+            Player next = NextPlayer(defend);
+            next.PlayerStatus = Player.status.Защищающийся;
+
+            Color.Green($"Защищается игрок {next.Name}.");
+            Console.WriteLine();
+        }
+
+        //показать карты в игре
+        protected void ShowCardsInGameWithPerevod()
+        {
+            if (CountPerevod == countPerevod.БезПеревода) ShowCardsInGame();
+
+            if (CountPerevod == countPerevod.Переведено1Раз)
+            {
+                Color.Cyan($"Карты в игре:");
+
+                if (CardsInGame.Count() % 2 != 0)
+                {
+                    for (int i = 0; i < CardsInGame.Count; ++i)
+                    {
+                        ShowCardsInGame();
+                    }
+                }
+                else
+                {
+                    if (CardsInGame.Count == 2)
+                    {
+                        Show1AttackCard(0);
+                        Show1AttackCard(1);
+                    }
+
+                    if (CardsInGame.Count == 4)
+                    {
+                        Show1AttackCard(0);
+                        Show1AttackCardShort(1);
+                        Show1DefendCard(2);
+                        Show1AttackCard(3);
+                    }
+                }
+            }   
+
+            if (CountPerevod == countPerevod.Переведено2Раз)
+            {
+                Color.Cyan($"Карты в игре:");
+
+                if (CardsInGame.Count == 3)
+                {
+                    for (int i = 0; i < CardsInGame.Count; ++i)
+                    {
+                        Show1AttackCard(i);
+                    }
+                }
+
+                if (CardsInGame.Count == 4)
+                {
+                    Show1AttackCardShort(0);
+                    Show1DefendCard(1);
+                    Show1AttackCard(2);
+                    Show1AttackCard(3);
+                }
+
+            }
+
+            if (CountPerevod == countPerevod.Переведено3Раз)
+            {
+                Color.Cyan($"Карты в игре:");
+
+                if (CardsInGame.Count == 4)
+                {
+                    for (int i = 0; i < CardsInGame.Count; ++i)
+                    {
+                        Show1AttackCard(i);
+                    }
+                }
+
+                if (CardsInGame.Count == 5)
+                {
+                    Show1AttackCardShort(0);
+                    Show1DefendCard(1);
+                    Show1AttackCard(2);
+                    Show1AttackCard(3);
+                    Show1AttackCard(4);
+                }
+
+                if (CardsInGame.Count == 6)
+                {
+                    Show1AttackCardShort(0);
+                    Show1DefendCard(1);
+                    Show1AttackCardShort(2);
+                    Show1DefendCard(3);
+                    Show1AttackCard(4);
+                    Show1AttackCard(5);
+                }
+
+            }
+
+            void Show1AttackCardShort (int i)
+            {
+                Console.Write($"{CardsInGame[i].GetNominal}, {CardsInGame[i].GetMast}");
+                if (Kozyr.GetMast == CardsInGame[i].GetMast) Color.GreenShort(" (козырь)");
+            }
+            void Show1AttackCard(int i)
+            {
+                Console.Write($"{CardsInGame[i].GetNominal}, {CardsInGame[i].GetMast}");
+                if (Kozyr.GetMast == CardsInGame[i].GetMast) Color.Green(" (козырь).");
+                else
+                {
+                    Console.Write(".");
+                    Console.WriteLine();
+                }
+            }
+            void Show1DefendCard(int i)
+            {
+                Console.Write($" - бита картой {CardsInGame[i].GetNominal}, {CardsInGame[i].GetMast}");
+                if (Kozyr.GetMast == CardsInGame[i].GetMast) Color.GreenShort(" (козырь).");
+                else
+                {
+                    Console.Write(".");
+                    Console.WriteLine();
+                }
+            }
+        }
     }
+
+
+    
 }

@@ -203,7 +203,7 @@
                     }
 
                     //Показ карт в игре
-                    ShowCardsInGame(CardsInGame, Kozyr);
+                    ShowCardsInGame();
                     Console.WriteLine();
                     Thread.Sleep(2000);
 
@@ -248,7 +248,7 @@
                     }
 
                     //Показ карт в игре
-                    ShowCardsInGame(CardsInGame, Kozyr);
+                    ShowCardsInGame();
 
                     //проверка на макс.количество сыгранных карт и наличия карт у защищающегося
                     if (MaxCardCheck()) break;
@@ -667,15 +667,15 @@
         }
 
         //показать карты в игре
-        protected void ShowCardsInGame(List<Card> cardsInGame, Card kozyr)
+        protected void ShowCardsInGame()
         {
             Color.Cyan($"Карты в игре:");
 
             int j = 1;
-            for (int i = 0; i < cardsInGame.Count; i += 2)
+            for (int i = 0; i < CardsInGame.Count; i += 2)
             {
-                Console.Write($"{cardsInGame[i].GetNominal}, {cardsInGame[i].GetMast}");
-                if (kozyr.GetMast == cardsInGame[i].GetMast) Color.GreenShort(" (козырь)");
+                Console.Write($"{CardsInGame[i].GetNominal}, {CardsInGame[i].GetMast}");
+                if (Kozyr.GetMast == CardsInGame[i].GetMast) Color.GreenShort(" (козырь)");
 
                 // если карта в игре нечетная - конец вывода
                 if (i % 2 != 0)
@@ -687,10 +687,10 @@
                 // если карта в игре четная - выводится карта, которой она бита
                 if (i % 2 == 0)
                 {
-                    for (; j < cardsInGame.Count;)
+                    for (; j < CardsInGame.Count;)
                     {
-                        Console.Write($" - бита картой {cardsInGame[j].GetNominal}, {cardsInGame[j].GetMast}");
-                        if (kozyr.GetMast == cardsInGame[j].GetMast) Color.GreenShort(" (козырь).");
+                        Console.Write($" - бита картой {CardsInGame[j].GetNominal}, {CardsInGame[j].GetMast}");
+                        if (Kozyr.GetMast == CardsInGame[j].GetMast) Color.GreenShort(" (козырь).");
                         else Console.Write(".");
                         Console.WriteLine();
                         j += 2;
