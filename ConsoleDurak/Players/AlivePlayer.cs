@@ -141,7 +141,7 @@
                     if (!kozOnKoz)
                     {
                         Color.Red("Козырь нужно бить козырем.");
-                        return NoCheckDefend ();
+                        return NoCheck();
                     }
 
                     // козырь нужно бить старшим козырем
@@ -150,7 +150,7 @@
                     if (!bigKoz)
                     {
                         Color.Red("Нужно бить старшим козырем.");
-                        return NoCheckDefend(); ;
+                        return NoCheck(); ;
                     }
                 }
                 // если атакуют не козырем
@@ -164,7 +164,7 @@
                         if (!noMast)
                         {
                             Color.Red("Нужно бить той же мастью.");
-                            return NoCheckDefend();
+                            return NoCheck();
                         }
 
                         // масть должна соответствовать и номинал должен быть выше 
@@ -173,7 +173,7 @@
                         if (!bigCard)
                         {
                             Color.Red("Нужно бить старшей картой.");
-                            return NoCheckDefend();
+                            return NoCheck();
                         }
                     }
 
@@ -183,19 +183,64 @@
 
                 return true;
             }
-
-            bool NoCheckDefend()
-            {
-                Color.Red("Введенное значение неверно.");
-                Console.WriteLine();
-                Thread.Sleep(1000);
-                return false;
-            }
+            
         }
 
         internal override Card Podkid(Card kozyr, List<Card> cardsInGame, List<Player> Players)
         {
            return Attack(kozyr, cardsInGame, Players);
+        }
+
+        internal override Card Perevod(Card kozyr, List<Card> cardsInGame, List<Player> Players)
+        {
+            Card perevodCard = null; //карта для перевода
+            int answerPerevod; // номер карты для перевода
+            PlayerKoloda.Sort(Card.SortByNominal); // сортировка карт по номиналу
+
+            // номиналы карт в игре
+            var nominals = cardsInGame.Select(e => e.GetNominal);
+
+            do
+            {
+                do
+                {
+                    //показать руку
+                    HandInfo(kozyr);
+                    Console.WriteLine($"[-1]. Не переводить.");
+                    Console.WriteLine();
+
+                    //ответ игрока
+                    answerPerevod = Table.PlayerAnswer();
+
+                    // Не переводить
+                    if (answerPerevod == -1)
+                    {
+                        return perevodCard;
+                    }
+
+                    // ввод неверного числа 
+                    if (Table.CheckСonditions(answerPerevod, PlayerKoloda.Count, 1, -1)) break;
+
+                } while (true);
+
+                //условия защиты согласно правилам игры  
+                if (PerevodCheck()) break;
+
+            } while (true);
+
+            //получение карты и ее удаление из руки
+            return GetCard(answerPerevod);
+
+            //условия защиты согласно правилам игры
+            bool PerevodCheck()
+            {
+                if (cardsInGame.Last().GetNominal != PlayerKoloda[answerPerevod - 1].GetNominal)
+                {
+                    Color.Red("Для перевода необходима карта того же номинала.");
+                    return NoCheck();
+                }
+                return true;
+            }
         }
 
 
@@ -221,6 +266,15 @@
             Card card = PlayerKoloda[c - 1];
             PlayerKoloda.Remove(card);
             return card;
+        }
+
+        //неверное значение
+        private bool NoCheck()
+        {
+            Color.Red("Введенное значение неверно.");
+            Console.WriteLine();
+            Thread.Sleep(1000);
+            return false;
         }
     }
 }

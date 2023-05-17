@@ -1,13 +1,12 @@
-﻿namespace ConsoleDurak
+﻿using System.Collections.Generic;
+
+namespace ConsoleDurak
 {
-    internal class VirtualPlayer2 : Player
+    internal class VirtualPlayer2 : VirtualPlayer
     {
         internal VirtualPlayer2(string name)
-        {
-            Name = name;
-            PlayerStatus = status.Нейтральный;
-            PlayerKoloda = new List<Card>();
-        }
+            :base(name)
+        {}
             
         internal override Card Attack(Card kozyr, List<Card> cardsInGame, List<Player> Players)
         {
@@ -346,7 +345,52 @@
             return podkidCard;
         }
 
+        internal override Card Perevod(Card kozyr, List<Card> cardsInGame, List<Player> Players)
+        {
+            //карта для защиты
+            Card perevodCard = null;
 
+            //количество играющих игроков
+            var playersInGame = Players.Where(e => e.PlayerStatus != status.ВышелИзИгры).Count();
+
+            //не переводить если игроков 3
+            if (playersInGame == 3) return perevodCard;
+            else
+            {
+                // выбор наименьшего некозыря для перевода
+                foreach (var card in PlayerKoloda)
+                {
+                    if (card.GetMast != kozyr.GetMast)
+                    {
+                        if (card.GetNominal == cardsInGame.Last().GetNominal)
+                        {
+                            perevodCard = card;
+                        }
+                    }
+                }
+
+                //если после этого карты для перевода нет и игроков двое
+                if (perevodCard == null && playersInGame == 2)
+                {
+                    // выбор наименьшего козыря для перевода
+                    foreach (var card in PlayerKoloda)
+                    {
+                        if (card.GetMast == kozyr.GetMast)
+                        {
+                            //выбирается меньший козырь по номиналу
+                            if (card.GetNominal == cardsInGame.Last().GetNominal)
+                            {
+                                perevodCard = card;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //удаление карты из руки        
+            PlayerKoloda.Remove(perevodCard);
+            return perevodCard;
+        }
     }
 }
 

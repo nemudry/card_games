@@ -22,7 +22,9 @@
 
         //подкид
         internal abstract Card Podkid(Card kozyr, List<Card> cardsInGame, List<Player> Players);
-        
+
+        //перевод 
+        internal abstract Card Perevod(Card kozyr, List<Card> cardsInGame, List<Player> Players);
 
         //выбирается наименьшая карта по номиналу
         internal Card CardMin(Card card, Card x)
