@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace ConsoleDurak
 {
     internal class VirtualPlayer2 : VirtualPlayer

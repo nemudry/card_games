@@ -1,6 +1,4 @@
-﻿using static ConsoleDurak.DurakPerevod;
-
-namespace ConsoleDurak
+﻿namespace ConsoleDurak
 {
     internal class VirtualPlayer : Player
     {

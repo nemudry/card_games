@@ -1,5 +1,4 @@
-﻿using System.Linq;
-
+﻿
 namespace ConsoleDurak
 {
     internal class DurakPerevod : Durak
